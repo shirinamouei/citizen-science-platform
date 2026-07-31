@@ -1,0 +1,146 @@
+.authSection {
+  padding: 56px 0 96px;
+  background: linear-gradient(180deg, var(--lavender) 0%, var(--bg) 340px);
+}
+.authCardOuter { max-width: 620px; margin: 0 auto; }
+.authIntro { text-align: center; margin-bottom: 28px; }
+.authIntro .eyebrow { justify-content: center; }
+
+.authTabs {
+  display: flex;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.authTabs button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.authTabs button.active { background: var(--navy); color: var(--white); }
+
+.authCard { padding: 40px; }
+.authCard h2 { font-size: 23px; margin-bottom: 6px; }
+.authSub { font-size: 13.5px; color: var(--text-muted); margin-bottom: 26px; }
+
+.field { margin-bottom: 20px; }
+.field label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.field .hint { font-size: 12.5px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
+}
+.fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.forgotLink { display: block; text-align: right; font-size: 13px; color: var(--navy); font-weight: 600; margin: -10px 0 20px; }
+.forgotLink:hover { text-decoration: underline; }
+
+.sectionDivider { margin: 30px 0 22px; padding-top: 22px; border-top: 1px solid var(--border); }
+.sectionDivider h3 { font-size: 15.5px; margin-bottom: 4px; }
+.sectionDivider p { font-size: 12.5px; color: var(--text-muted); }
+
+.surveyQ { margin-bottom: 22px; }
+.surveyLabel { display: block; font-size: 13.5px; font-weight: 600; color: var(--navy); margin-bottom: 4px; line-height: 1.45; }
+.surveyHint { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: block; line-height: 1.4; }
+
+.segmented { display: flex; gap: 8px; }
+.segBtn {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.segBtn:hover:not(.segBtnActive) { border-color: var(--blue); background: var(--lavender); }
+.segBtnActive { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+.q4Methods {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--lavender);
+  border-radius: var(--radius-sm);
+}
+.q4Methods > span { font-size: 12.5px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 10px; }
+.checkboxGroup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.checkboxItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.checkboxItem input { margin-top: 2px; flex-shrink: 0; }
+
+.consentBox {
+  background: var(--lavender);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 13.5px;
+  color: var(--navy);
+  margin-top: 4px;
+}
+.consentBox input { margin-top: 3px; flex-shrink: 0; }
+
+.infoNote {
+  background: var(--lavender);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  font-size: 13.5px;
+  color: var(--navy);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.authFooterLink { text-align: center; font-size: 13.5px; color: var(--text-muted); margin-top: 22px; }
+.authFooterLink a { color: var(--navy); font-weight: 600; text-decoration: underline; cursor: pointer; }
+.guestInline { text-align: center; margin-top: 16px; }
+
+@media (max-width: 640px) {
+  .fieldRow { grid-template-columns: 1fr; }
+  .checkboxGroup { grid-template-columns: 1fr; }
+  .authCard { padding: 26px; }
+}

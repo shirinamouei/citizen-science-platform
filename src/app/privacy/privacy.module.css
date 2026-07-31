@@ -1,0 +1,30 @@
+.legalHero { padding: 56px 0 8px; }
+.legalLayout { display: grid; grid-template-columns: 240px 1fr; gap: 48px; align-items: start; }
+.toc { position: sticky; top: 96px; }
+.tocCard { padding: 20px; }
+.tocCard a {
+  display: block; font-size: 13.5px; color: var(--text-muted);
+  padding: 8px 10px; border-radius: 8px; margin-bottom: 2px;
+}
+.tocCard a:hover { background: var(--lavender); color: var(--navy); }
+.legalBody h2 { font-size: 22px; margin-top: 40px; margin-bottom: 12px; }
+.legalBody h2:first-child { margin-top: 0; }
+.legalBody p { color: var(--text-muted); font-size: 15px; margin-bottom: 14px; max-width: 680px; }
+.legalBody ul { margin: 14px 0 14px 20px; color: var(--text-muted); font-size: 15px; }
+.legalBody li { margin-bottom: 8px; }
+.updatedPill { margin-bottom: 20px; }
+.callout {
+  background: var(--lavender);
+  border-radius: var(--radius-sm);
+  padding: 20px 22px;
+  margin: 20px 0;
+  font-size: 14.5px;
+  color: var(--navy);
+}
+.dataTable { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
+.dataTable th, .dataTable td { text-align: left; padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+.dataTable th { color: var(--text-muted); font-weight: 600; }
+@media (max-width: 860px) {
+  .legalLayout { grid-template-columns: 1fr; }
+  .toc { position: static; display: none; }
+}
