@@ -32,19 +32,17 @@ function SelectField({
   label,
   hint,
   options,
-  required,
 }: {
   label: string;
   hint?: string;
   options: string[];
-  required?: boolean;
 }) {
   return (
     <div className={styles.field}>
       <label>
         {label} {hint && <span className={styles.hint}>{hint}</span>}
       </label>
-      <select defaultValue="" required={required}>
+      <select defaultValue="">
         <option value="" disabled>
           Select one
         </option>
@@ -58,7 +56,7 @@ function SelectField({
 
 function MultiSelectQuestion({
   label,
-  hint,
+  hint = "Select all that apply",
   options,
 }: {
   label: string;
@@ -220,7 +218,7 @@ export default function SignInPage() {
                 <strong>Why we ask:</strong>{" "}
                 these optional questions help researchers understand who&apos;s contributing.
                 Your answers are anonymized. See our{" "}
-                <Link href="/privacy" style={{ textDecoration: "underline", color: "var(--navy)" }}>
+                <Link href="/privacy" className="link-underline">
                   Privacy Policy
                 </Link>{" "}
                 for details.
@@ -316,7 +314,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="Medication(s)"
-                  hint="Select all that apply"
                   options={[
                     "Sertraline (Zoloft)",
                     "Fluoxetine (Prozac)",
@@ -365,7 +362,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="What prompted you to track your withdrawal symptoms?"
-                  hint="Select all that apply"
                   options={[
                     "Curiosity about my own patterns",
                     "A recommendation from a healthcare provider",
@@ -383,7 +379,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="What do you track when recording withdrawal symptoms?"
-                  hint="Select all that apply"
                   options={[
                     "Physical symptoms",
                     "Emotional or mood changes",
@@ -397,7 +392,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="When you record withdrawal symptoms, what kind of information do you typically include?"
-                  hint="Select all that apply"
                   options={[
                     "Severity or intensity",
                     "Time of day",
@@ -411,7 +405,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="What tools or methods do you use to keep track of your withdrawal symptoms?"
-                  hint="Select all that apply"
                   options={[
                     "Written notes / journal",
                     "Spreadsheet or app",
@@ -424,7 +417,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="What other aspects of your life and experiences, if any, do you record while keeping track of withdrawal symptoms?"
-                  hint="Select all that apply"
                   options={[
                     "Sleep quality",
                     "Diet or nutrition",
@@ -438,7 +430,6 @@ export default function SignInPage() {
 
                 <MultiSelectQuestion
                   label="What challenges, if any, have you faced when trying to track your symptoms?"
-                  hint="Select all that apply"
                   options={[
                     "Forgetting to log entries",
                     "Not knowing what to track",
@@ -468,7 +459,7 @@ export default function SignInPage() {
                   <span>
                     I understand my responses will be anonymized and used in aggregate for
                     research purposes, per the{" "}
-                    <Link href="/privacy" style={{ textDecoration: "underline", color: "var(--navy)" }}>
+                    <Link href="/privacy" className="link-underline">
                       Privacy Policy
                     </Link>
                     .

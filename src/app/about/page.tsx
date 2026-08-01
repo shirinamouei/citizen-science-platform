@@ -5,6 +5,46 @@ export const metadata: Metadata = {
   title: "About Us | TaperTrack",
 };
 
+const values = [
+  {
+    background: "var(--lavender)",
+    title: "Consent first",
+    description: "Every contribution is opt-in. Nothing is required to use the app.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 3.5 0 6 3.5 4 7.5C19 16.65 12 21 12 21z"
+          stroke="#112845"
+          strokeWidth="1.6"
+        />
+      </svg>
+    ),
+  },
+  {
+    background: "#fff3e0",
+    title: "Privacy by default",
+    description: "Identifying details are removed before your data reaches a researcher.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="#FF9500" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+  {
+    background: "var(--blue)",
+    title: "Any format, one place",
+    description:
+      "Handwritten notes, PDFs, spreadsheets, even AI chat exports. We organize whatever you already have into one view of your taper.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3 3 8l9 5 9-5-9-5z" stroke="#112845" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M3 12l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M3 16l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
 export default function AboutPage() {
   return (
     <main>
@@ -41,51 +81,15 @@ export default function AboutPage() {
             <h2>The principles behind the platform</h2>
           </div>
           <div className={styles.valueGrid}>
-            <div className={`card ${styles.valueCard}`}>
-              <div className={styles.valueIcon} style={{ background: "var(--lavender)" }}>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 3.5 0 6 3.5 4 7.5C19 16.65 12 21 12 21z"
-                    stroke="#112845"
-                    strokeWidth="1.6"
-                  />
-                </svg>
+            {values.map((value) => (
+              <div className={`card ${styles.valueCard}`} key={value.title}>
+                <div className={styles.valueIcon} style={{ background: value.background }}>
+                  {value.icon}
+                </div>
+                <h3>{value.title}</h3>
+                <p className="text-muted-sm">{value.description}</p>
               </div>
-              <h3>Consent first</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14.5px", marginTop: "8px" }}>
-                Every contribution is opt-in. Nothing is required to use the app.
-              </p>
-            </div>
-            <div className={`card ${styles.valueCard}`}>
-              <div className={styles.valueIcon} style={{ background: "#fff3e0" }}>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="#FF9500" strokeWidth="1.6" />
-                </svg>
-              </div>
-              <h3>Privacy by default</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14.5px", marginTop: "8px" }}>
-                Identifying details are removed before your data reaches a researcher.
-              </p>
-            </div>
-            <div className={`card ${styles.valueCard}`}>
-              <div className={styles.valueIcon} style={{ background: "var(--blue)" }}>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 3 3 8l9 5 9-5-9-5z"
-                    stroke="#112845"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M3 12l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 16l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <h3>Any format, one place</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14.5px", marginTop: "8px" }}>
-                Handwritten notes, PDFs, spreadsheets, even AI chat exports. We organize whatever
-                you already have into one view of your taper.
-              </p>
-            </div>
+            ))}
           </div>
 
           <div className={styles.storyGrid}>

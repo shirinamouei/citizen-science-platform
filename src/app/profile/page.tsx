@@ -13,6 +13,90 @@ const historyRows = [
   { date: "Jun 16, 2026", med: "Sertraline", dose: "47.5 mg", notes: "Mild nausea", status: "synced" as const },
 ];
 
+const stats = [
+  {
+    background: "var(--lavender)",
+    value: "28",
+    label: "Total uploads",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#112845" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    background: "#fff3e0",
+    value: "14-day",
+    label: "Current streak",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 2v6M12 16v6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6" stroke="#FF9500" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    background: "var(--blue)",
+    value: "Jul 14",
+    label: "Last upload",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="16" rx="2" stroke="#112845" strokeWidth="1.6" />
+        <path d="M3 9h18" stroke="#112845" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+  {
+    background: "#e6f6ec",
+    value: "100%",
+    label: "Anonymized & synced",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M9 12l2 2 4-4" stroke="#1a7f4a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="9" stroke="#1a7f4a" strokeWidth="1.4" />
+      </svg>
+    ),
+  },
+];
+
+const milestones = [
+  { label: "First upload", done: true },
+  { label: "10 uploads", done: true },
+  { label: "7-day streak", done: true },
+  { label: "50 uploads", done: false },
+  { label: "90-day streak", done: false },
+];
+
+function StatCard({
+  icon,
+  background,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  background: string;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className={`card ${styles.statCard}`}>
+      <div className={styles.statIcon} style={{ background }}>
+        {icon}
+      </div>
+      <div className={styles.statValue}>{value}</div>
+      <div className={styles.statLabel}>{label}</div>
+    </div>
+  );
+}
+
+function Milestone({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className={`${styles.milestone} ${done ? styles.milestoneDone : ""}`}>
+      <div className={styles.dot}></div>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { isSignedIn, email, signOut } = useAuth();
   const isGuest = !isSignedIn;
@@ -59,44 +143,9 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.statRow}>
-              <div className={`card ${styles.statCard}`}>
-                <div className={styles.statIcon} style={{ background: "var(--lavender)" }}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#112845" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className={styles.statValue}>28</div>
-                <div className={styles.statLabel}>Total uploads</div>
-              </div>
-              <div className={`card ${styles.statCard}`}>
-                <div className={styles.statIcon} style={{ background: "#fff3e0" }}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2v6M12 16v6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6" stroke="#FF9500" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className={styles.statValue}>14-day</div>
-                <div className={styles.statLabel}>Current streak</div>
-              </div>
-              <div className={`card ${styles.statCard}`}>
-                <div className={styles.statIcon} style={{ background: "var(--blue)" }}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="#112845" strokeWidth="1.6" />
-                    <path d="M3 9h18" stroke="#112845" strokeWidth="1.6" />
-                  </svg>
-                </div>
-                <div className={styles.statValue}>Jul 14</div>
-                <div className={styles.statLabel}>Last upload</div>
-              </div>
-              <div className={`card ${styles.statCard}`}>
-                <div className={styles.statIcon} style={{ background: "#e6f6ec" }}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M9 12l2 2 4-4" stroke="#1a7f4a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="12" r="9" stroke="#1a7f4a" strokeWidth="1.4" />
-                  </svg>
-                </div>
-                <div className={styles.statValue}>100%</div>
-                <div className={styles.statLabel}>Anonymized &amp; synced</div>
-              </div>
+              {stats.map((stat) => (
+                <StatCard key={stat.label} {...stat} />
+              ))}
             </div>
 
             <div className={styles.chartSection}>
@@ -121,26 +170,9 @@ export default function ProfilePage() {
                   </svg>
                 </div>
                 <h3>Milestones</h3>
-                <div className={`${styles.milestone} ${styles.milestoneDone}`}>
-                  <div className={styles.dot}></div>
-                  <span>First upload</span>
-                </div>
-                <div className={`${styles.milestone} ${styles.milestoneDone}`}>
-                  <div className={styles.dot}></div>
-                  <span>10 uploads</span>
-                </div>
-                <div className={`${styles.milestone} ${styles.milestoneDone}`}>
-                  <div className={styles.dot}></div>
-                  <span>7-day streak</span>
-                </div>
-                <div className={styles.milestone}>
-                  <div className={styles.dot}></div>
-                  <span>50 uploads</span>
-                </div>
-                <div className={styles.milestone}>
-                  <div className={styles.dot}></div>
-                  <span>90-day streak</span>
-                </div>
+                {milestones.map((milestone) => (
+                  <Milestone key={milestone.label} {...milestone} />
+                ))}
               </div>
             </div>
 
