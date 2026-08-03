@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import styles from "./signin.module.css";
 
 function SegmentedYesNo() {
@@ -79,47 +80,82 @@ function MultiSelectQuestion({
   );
 }
 
-const MENTAL_HEALTH_CONDITIONS = [
-  "Depression",
-  "Anxiety",
-  "Bipolar disorder",
-  "Obsessive-compulsive disorder (OCD)",
-  "Post-traumatic stress disorder (PTSD)",
-  "Schizophrenia or other psychotic disorder",
-  "Attention-deficit/hyperactivity disorder (ADHD)",
-  "Other",
+const PRESCRIBED_CONDITION_GROUPS: { category: string; options: string[] }[] = [
+  {
+    category: "Mental Health Conditions",
+    options: [
+      "Depression",
+      "Anxiety",
+      "Bipolar disorder",
+      "Obsessive-compulsive disorder (OCD)",
+      "Post-traumatic stress disorder (PTSD)",
+      "Schizophrenia or other psychotic disorder",
+      "Attention-deficit/hyperactivity disorder (ADHD)",
+    ],
+  },
+  {
+    category: "Sleep and Neurological Conditions",
+    options: [
+      "Insomnia or other sleep disorder",
+      "Migraine or other neurological condition",
+      "Seizure disorder (e.g., epilepsy)",
+    ],
+  },
+  {
+    category: "Chronic Physical Health Conditions",
+    options: [
+      "Chronic pain or fibromyalgia",
+      "Gastrointestinal disorder (e.g., Irritable Bowel Syndrome)",
+      "Menopausal or premenstrual symptoms (e.g., PMDD, PMS)",
+    ],
+  },
 ];
 
-function DiagnosedConditionField() {
+const NOT_LISTED_CATEGORY = "Not listed above";
+
+function PrescribedConditionQuestion() {
   const [category, setCategory] = useState("");
+  const group = PRESCRIBED_CONDITION_GROUPS.find((g) => g.category === category);
+
   return (
-    <>
-      <div className={styles.field}>
-        <label>Diagnosed condition</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="" disabled>
-            Select one
-          </option>
-          <option>Mental health</option>
-          <option>Sleep &amp; neurological conditions</option>
-          <option>Chronic physical health</option>
-          <option>Other</option>
-        </select>
-      </div>
-      {category === "Mental health" && (
+    <div className={styles.surveyQ}>
+      <label className={styles.surveyLabel}>
+        What condition(s) were you originally prescribed this medication for?
+      </label>
+      <span className={styles.surveyHint}>Select all that apply</span>
+
+      <div className={styles.conditionGroups}>
         <div className={styles.field}>
-          <label>Specific condition</label>
-          <select defaultValue="">
+          <label>Condition category</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="" disabled>
               Select one
             </option>
-            {MENTAL_HEALTH_CONDITIONS.map((condition) => (
-              <option key={condition}>{condition}</option>
+            {PRESCRIBED_CONDITION_GROUPS.map((g) => (
+              <option key={g.category} value={g.category}>
+                {g.category}
+              </option>
             ))}
+            <option value={NOT_LISTED_CATEGORY}>{NOT_LISTED_CATEGORY}</option>
           </select>
         </div>
-      )}
-    </>
+
+        {group && (
+          <div className={styles.checkboxGroup}>
+            {group.options.map((option) => (
+              <label key={option} className={styles.checkboxItem}>
+                <input type="checkbox" />
+                {option}
+              </label>
+            ))}
+          </div>
+        )}
+
+        {category === NOT_LISTED_CATEGORY && (
+          <input type="text" className={styles.otherInput} placeholder="Please specify" />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -127,9 +163,19 @@ export default function SignInPage() {
   const router = useRouter();
   const { signIn } = useAuth();
   const [tab, setTab] = useState<"signin" | "create">("signin");
+  const [dob, setDob] = useState("");
+  const underage = isMinor(dob);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const email = new FormData(e.currentTarget).get("email");
+    signIn(String(email));
+    router.push("/profile");
+  }
+
+  function handleCreateAccountSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (underage) return;
     const email = new FormData(e.currentTarget).get("email");
     signIn(String(email));
     router.push("/profile");
@@ -145,8 +191,9 @@ export default function SignInPage() {
             </div>
             <h1 style={{ fontSize: "32px" }}>Sign in, or create an account</h1>
             <p className="lede" style={{ margin: "12px auto 0", textAlign: "center" }}>
-              An account allows you to easily monitor the status and contents of your past uploads, 
-              and keep track of them over time.
+              An account lets you bring tapering data from different sources, like
+              spreadsheets, PDFs, and past notes, into one place, and keep track of
+              what you&apos;ve donated over time.
             </p>
           </div>
 
@@ -190,7 +237,7 @@ export default function SignInPage() {
               </form>
 
               <div className={styles.authFooterLink}>
-                New to TaperTrack?{" "}
+                New to Cascade?{" "}
                 <a
                   href="#"
                   onClick={(e) => {
@@ -224,7 +271,7 @@ export default function SignInPage() {
                 for details.
               </div>
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleCreateAccountSubmit}>
                 <div className={styles.field}>
                   <label>Email</label>
                   <input type="email" name="email" placeholder="you@example.com" required />
@@ -246,7 +293,14 @@ export default function SignInPage() {
                 <div className={styles.fieldRow}>
                   <div className={styles.field}>
                     <label>Date of birth</label>
-                    <input type="date" required />
+                    <input
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      className={underage ? styles.inputError : ""}
+                      required
+                    />
+                    {underage && <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>}
                   </div>
                   <SelectField
                     label="Gender"
@@ -330,21 +384,36 @@ export default function SignInPage() {
                   ]}
                 />
 
-                <DiagnosedConditionField />
+                <PrescribedConditionQuestion />
 
                 <SelectField
-                  label="How long have you been taking this medication?"
-                  options={["Less than 1 month", "1–6 months", "6 months–1 year", "1–3 years", "3–5 years", "More than 5 years"]}
+                  label="How long have you been taking the medication you're currently reducing or stopping?"
+                  options={[
+                    "Less than 6 months",
+                    "6 months to 1 year",
+                    "1-2 years",
+                    "3-5 years",
+                    "6-10 years",
+                    "More than 10 years",
+                    "Not sure",
+                  ]}
                 />
 
                 <SelectField
-                  label="Have you tried tapering or stopping this medication before?"
-                  options={["No, this is my first attempt", "Yes, once before", "Yes, multiple times before"]}
+                  label="Have you tried reducing or stopping this medication before?"
+                  options={[
+                    "No, this is my first time",
+                    "Yes, I've made 1–2 previous attempts",
+                    "Yes, I've made 3–4 previous attempts",
+                    "Yes, I've made 5 or more previous attempts",
+                    "Yes, I've made multiple attempts but don't remember how many",
+                    "Not sure",
+                  ]}
                 />
 
                 <SelectField
                   label="How long have you been reducing or stopping this medication?"
-                  options={["Not currently reducing or stopping", "Less than 1 month", "1–3 months", "3–6 months", "6 months–1 year", "More than 1 year"]}
+                  options={["Less than 1 month", "1–2 months", "3–6 months", "7–11 months", "1–2 years", "More than 2 years"]}
                 />
 
                 <div className={styles.surveyQ}>
@@ -466,7 +535,12 @@ export default function SignInPage() {
                   </span>
                 </div>
 
-                <button type="submit" className="btn btn-primary mt-24" style={{ width: "100%" }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary mt-24"
+                  style={{ width: "100%" }}
+                  disabled={underage}
+                >
                   Create Account
                 </button>
               </form>

@@ -9,9 +9,9 @@ export default function Footer() {
           <div>
             <div className="footer-brand">
               <BrandMark />
-              TaperTrack
+              Cascade
             </div>
-            <p>Organize your tapering data, and optionally donate it to help future patients.</p>
+            <p>Donate your tapering data to help future patients. Create an account to bring it all together first.</p>
           </div>
           <div>
             <h4>Product</h4>
@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 TaperTrack. All data is voluntary.</span>
+          <span>© 2026 Cascade. All data is voluntary.</span>
           <span>Not a substitute for medical advice.</span>
         </div>
       </div>

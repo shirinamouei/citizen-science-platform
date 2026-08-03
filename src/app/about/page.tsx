@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
-  title: "About Us | TaperTrack",
+  title: "About Us | Cascade",
 };
 
 const values = [
@@ -34,7 +34,7 @@ const values = [
     background: "#e3f1fc",
     title: "Any format, one place",
     description:
-      "Handwritten notes, PDFs, spreadsheets, even AI chat exports. We organize whatever you already have into one view of your taper.",
+      "Handwritten notes, PDFs, spreadsheets, even AI chat exports — with an account, we organize whatever you already have into one view, ready to donate.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M12 3 3 8l9 5 9-5-9-5z" stroke="#112845" strokeWidth="1.6" strokeLinejoin="round" />
@@ -52,19 +52,20 @@ export default function AboutPage() {
         <div className="wrap">
           <h1>Tapering off medication shouldn&apos;t rely on guesswork.</h1>
           <p className="lede">
-            Tapering data is often scattered across notebooks, PDFs, spreadsheets, and chat
-            logs. TaperTrack brings it into one place, and you can choose to donate it to
-            support research.
+            Cascade exists so you can donate your tapering data to support research and
+            future patients. If yours is scattered across notebooks, PDFs, spreadsheets,
+            and chat logs, create an account to bring it into one place first.
           </p>
         </div>
+      </section>
 
+      <section className={styles.missionBand}>
         <div className="wrap">
-          <div className={styles.missionBand}>
-            <h2>
-              Bring together your diary entries, PDFs, spreadsheets, and AI chat logs into one
-              place. Donate it anonymously to help the next person taper with more confidence.
-            </h2>
-          </div>
+          <h2>
+            Donate your tapering data anonymously to help the next person taper with more
+            confidence. With an account, bring together your diary entries, PDFs,
+            spreadsheets, and AI chat logs into one place first.
+          </h2>
         </div>
       </section>
 
@@ -86,34 +87,32 @@ export default function AboutPage() {
           </div>
 
           <div className={styles.storyGrid}>
-            <div>
-              <h2>Built after watching taper data go nowhere</h2>
-              <p className="lede mt-16" style={{ maxWidth: "520px" }}>
-                Tapering is often a solitary process, and the tools people use to track it
-                (notes apps, spreadsheets, AI assistants, notebooks) rarely talk to each other.
-                TaperTrack brings that record into one place, so you get a clear picture of your
-                taper. By donating it anonymously, you can help the next person experience a safer taper.
-              </p>
-            </div>
-            <div className={styles.storyVisual}>
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2v6M12 16v6M4.9 4.9l4.2 4.2M14.9 14.9l4.2 4.2M2 12h6M16 12h6M4.9 19.1l4.2-4.2M14.9 9.1l4.2-4.2"
-                  stroke="#112845"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+            <h2>Built after watching taper data go nowhere</h2>
+            <p className="lede">
+              Tapering is often a solitary process, and the record of it ends up scattered
+              across notes apps, spreadsheets, AI assistants, and notebooks that rarely
+              talk to each other. Cascade lets you donate that record anonymously so the
+              next person can taper with more confidence. Create an account first if you
+              want to bring it all together into one clear picture before you do.
+            </p>
           </div>
 
-          <div className={`card ${styles.teamNote}`}>
-            <h3>A note on medical advice</h3>
-            <p>
-              TaperTrack is a personal tracking and data-sharing platform, not a medical
-              provider. Talk to a healthcare professional before changing how you take any
-              medication.
-            </p>
+          <div className={styles.teamNote}>
+            <div className={styles.teamNoteIcon}>
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="#FF9500" strokeWidth="1.6" />
+                <path d="M12 11v5.5" stroke="#FF9500" strokeWidth="1.6" strokeLinecap="round" />
+                <circle cx="12" cy="7.75" r="1" fill="#FF9500" />
+              </svg>
+            </div>
+            <div>
+              <h3>A note on medical advice</h3>
+              <p>
+                Cascade is a data-donation platform for people tapering off medication, not a medical
+                provider. Talk to a healthcare professional before changing how you take any
+                medication.
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -7,7 +7,7 @@ export default function QrDownload() {
   return (
     <div className={styles.qrBox}>
       <QRCodeSVG
-        value="https://tapertrack.app/download"
+        value="https://cascade.app/download"
         size={148}
         fgColor="#112845"
         bgColor="#ffffff"

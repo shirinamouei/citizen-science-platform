@@ -20,7 +20,7 @@ export default function Header() {
       <nav className="nav">
         <Link href="/" className="brand">
           <BrandMark />
-          TaperTrack
+          Cascade
         </Link>
         <div className="nav-right">
           <ul className="nav-links">

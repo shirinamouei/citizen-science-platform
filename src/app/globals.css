@@ -1,5 +1,5 @@
 /* ============================================================
-   TaperTrack — Shared Design System
+   Cascade — Shared Design System
    Palette: FF9500 (orange) / F4BA41 (gold) / D9E3FA (pale lavender)
             98BDE0 (soft blue) / 112845 (navy)
    ============================================================ */
@@ -179,6 +179,13 @@ button { font-family: inherit; }
 .btn-dark:hover { background: var(--navy-soft); transform: translateY(-2px); }
 
 .btn-sm { padding: 9px 18px; font-size: 13.5px; }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
 /* ---------- Sections / Cards ---------- */
 section { padding: 88px 0; }

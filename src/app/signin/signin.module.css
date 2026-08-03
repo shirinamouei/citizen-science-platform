@@ -45,6 +45,8 @@
 .field input[type="text"],
 .field input[type="email"],
 .field input[type="password"],
+.field input[type="date"],
+.field input[type="number"],
 .field select,
 .field textarea {
   width: 100%;
@@ -61,6 +63,20 @@
   outline: none;
   border-color: var(--blue);
   box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
+}
+.field input.inputError {
+  border-color: #d64545;
+  background: #fdf1f1;
+}
+.field input.inputError:focus {
+  border-color: #d64545;
+  box-shadow: 0 0 0 4px rgba(214,69,69,0.15);
+}
+.errorText {
+  color: #c0392b;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 8px;
 }
 .fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
@@ -104,6 +120,25 @@
   padding: 10px 12px;
 }
 .checkboxItem input { margin-top: 2px; flex-shrink: 0; }
+
+.conditionGroups { display: flex; flex-direction: column; gap: 14px; }
+.conditionGroups .field { margin-bottom: 0; }
+.otherInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.otherInput:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
+}
 
 .consentBox {
   background: var(--lavender);

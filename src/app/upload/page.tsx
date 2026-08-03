@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { addUpload, saveDraft } from "@/lib/upload-store";
+import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import styles from "./upload.module.css";
-
-let nextId = 1;
 
 function formatToday() {
   return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -24,34 +23,156 @@ const dataHandlingPoints = [
   "Delete your contributions anytime*",
 ];
 
+const MEDICATION_OPTIONS = [
+  "Sertraline (Zoloft)",
+  "Fluoxetine (Prozac)",
+  "Escitalopram (Lexapro)",
+  "Paroxetine (Paxil)",
+  "Citalopram (Celexa)",
+  "Venlafaxine (Effexor)",
+  "Duloxetine (Cymbalta)",
+  "Alprazolam (Xanax)",
+  "Clonazepam (Klonopin)",
+  "Diazepam (Valium)",
+  "Lorazepam (Ativan)",
+  "Other",
+];
+
+function MedicationEntryFields({
+  id,
+  index,
+  showRemove,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  showRemove: boolean;
+  onRemove: () => void;
+}) {
+  const [medication, setMedication] = useState("");
+
+  return (
+    <div className={styles.medicationEntry}>
+      <div className={styles.medicationEntryHead}>
+        <span className={styles.medicationBadge}>Medication {index + 1}</span>
+        {showRemove && (
+          <button type="button" className={styles.removeMedBtn} onClick={onRemove}>
+            Remove
+          </button>
+        )}
+      </div>
+      <div className={styles.fieldRow3}>
+        <div className={styles.field}>
+          <label>
+            Medication name <span className={styles.hint}>(one medication only)</span>
+          </label>
+          <select
+            name={`med-name-${id}`}
+            value={medication}
+            onChange={(e) => setMedication(e.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Select one
+            </option>
+            {MEDICATION_OPTIONS.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+          {medication === "Other" && (
+            <input
+              type="text"
+              name={`med-name-other-${id}`}
+              placeholder="Type the medication name"
+              className={styles.otherInput}
+              required
+            />
+          )}
+        </div>
+        <div className={styles.field}>
+          <label>
+            Starting dose <span className={styles.hint}>(mg, best estimate is fine)</span>
+          </label>
+          <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
+        </div>
+        <div className={styles.field}>
+          <label>
+            Current dose <span className={styles.hint}>(mg, as of today)</span>
+          </label>
+          <input type="number" name={`med-dose-current-${id}`} placeholder="e.g. 75" required />
+        </div>
+      </div>
+      <div className={styles.fieldRow}>
+        <div className={styles.field}>
+          <label>
+            Taper start date <span className={styles.hint}>(approximate is fine)</span>
+          </label>
+          <input type="date" />
+        </div>
+        <div className={styles.field}>
+          <label>
+            Taper method <span className={styles.hint}>(current or most recent)</span>
+          </label>
+          <select defaultValue="">
+            <option value="" disabled>
+              Select one
+            </option>
+            <option>Direct / linear reduction</option>
+            <option>Hyperbolic reduction</option>
+            <option>Alternating dose</option>
+            <option>Liquid titration</option>
+            <option>Switched methods along the way</option>
+            <option>Not sure / don&apos;t know the name</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function UploadPage() {
-  const [medicationIds, setMedicationIds] = useState<number[]>([nextId++]);
+  const idBase = useId();
+  const medicationCounter = useRef(0);
+  const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [dob, setDob] = useState("");
+  const underage = isMinor(dob);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   function addMedication() {
-    setMedicationIds((prev) => [...prev, nextId++]);
+    medicationCounter.current += 1;
+    setMedicationIds((prev) => [...prev, `${idBase}-${medicationCounter.current}`]);
   }
 
-  function removeMedication(id: number) {
+  function removeMedication(id: string) {
     setMedicationIds((prev) => prev.filter((m) => m !== id));
   }
 
   function collectEntry() {
     const data = new FormData(formRef.current ?? undefined);
     const meds = medicationIds
-      .map((id) => (data.get(`med-name-${id}`) as string)?.trim())
+      .map((id) => {
+        const selected = ((data.get(`med-name-${id}`) as string) || "").trim();
+        const custom = ((data.get(`med-name-other-${id}`) as string) || "").trim();
+        return selected === "Other" ? custom : selected;
+      })
       .filter(Boolean);
-    const doses = medicationIds
-      .map((id) => (data.get(`med-dose-${id}`) as string)?.trim())
+    const doseSummaries = medicationIds
+      .map((id) => {
+        const starting = (data.get(`med-dose-${id}`) as string)?.trim();
+        const current = (data.get(`med-dose-current-${id}`) as string)?.trim();
+        if (starting && current) return `${starting}mg → ${current}mg`;
+        return starting || current ? `${starting || current}mg` : "";
+      })
       .filter(Boolean);
     const notes = ((data.get("notes") as string) || "").trim();
     return {
       date: formatToday(),
       med: meds.length ? meds.join(", ") : "Untitled entry",
-      dose: doses.length ? doses.map((d) => `${d}mg`).join(", ") : "—",
+      dose: doseSummaries.length ? doseSummaries.join(", ") : "—",
       notes: notes || "N/A",
     };
   }
@@ -82,6 +203,7 @@ export default function UploadPage() {
             className={`card ${styles.formCard}`}
             onSubmit={(e) => {
               e.preventDefault();
+              if (underage) return;
               addUpload({ ...collectEntry(), status: "synced" });
               setSubmitted(true);
               setDraftSaved(false);
@@ -98,59 +220,13 @@ export default function UploadPage() {
 
             <div>
               {medicationIds.map((id, index) => (
-                <div className={styles.medicationEntry} key={id}>
-                  <div className={styles.medicationEntryHead}>
-                    <span className={styles.medicationBadge}>Medication {index + 1}</span>
-                    {medicationIds.length > 1 && (
-                      <button
-                        type="button"
-                        className={styles.removeMedBtn}
-                        onClick={() => removeMedication(id)}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <div className={styles.fieldRow}>
-                    <div className={styles.field}>
-                      <label>
-                        Medication name <span className={styles.hint}>(one medication only)</span>
-                      </label>
-                      <input type="text" name={`med-name-${id}`} placeholder="e.g. Sertraline" required />
-                    </div>
-                    <div className={styles.field}>
-                      <label>
-                        Starting dose <span className={styles.hint}>(mg, best estimate is fine)</span>
-                      </label>
-                      <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
-                    </div>
-                  </div>
-                  <div className={styles.fieldRow}>
-                    <div className={styles.field}>
-                      <label>
-                        Taper start date <span className={styles.hint}>(approximate is fine)</span>
-                      </label>
-                      <input type="date" />
-                    </div>
-                    <div className={styles.field}>
-                      <label>
-                        Taper method <span className={styles.hint}>(current or most recent)</span>
-                      </label>
-                      <select defaultValue="">
-                        <option value="" disabled>
-                          Select one
-                        </option>
-                        <option>Direct / linear reduction</option>
-                        <option>Hyperbolic reduction</option>
-                        <option>Alternating dose</option>
-                        <option>Liquid titration</option>
-                        <option>Switched methods along the way</option>
-                        <option>Not sure / don&apos;t know the name</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
+                <MedicationEntryFields
+                  key={id}
+                  id={id}
+                  index={index}
+                  showRemove={medicationIds.length > 1}
+                  onRemove={() => removeMedication(id)}
+                />
               ))}
             </div>
             <button type="button" className={styles.addMedBtn} onClick={addMedication}>
@@ -166,7 +242,7 @@ export default function UploadPage() {
 
             <div className={styles.field}>
               <label>
-                Attach a file <span className={styles.hint}>(pharmacy printout, journal entry, spreadsheet, CSV, etc. Optional)</span>
+                Attach a file <span className={styles.hint}>(pharmacy printout, journal entry, spreadsheet, CSV, etc., optional)</span>
               </label>
               <div className={styles.dropzone} onClick={() => fileInputRef.current?.click()}>
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -177,6 +253,20 @@ export default function UploadPage() {
                 <span>CSV, XLSX, or PDF, up to 10MB</span>
                 <input ref={fileInputRef} type="file" style={{ display: "none" }} />
               </div>
+            </div>
+
+            <div className={styles.field}>
+              <label>
+                Date of birth <span className={styles.hint}>(confirms you&apos;re 18 or older, not linked to your entry)</span>
+              </label>
+              <input
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                className={underage ? styles.inputError : ""}
+                required
+              />
+              {underage && <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>}
             </div>
 
             <div className={styles.consentBox}>
@@ -192,7 +282,7 @@ export default function UploadPage() {
             </div>
 
             <div className={`${styles.submitRow} mt-24`}>
-              <button type="submit" className="btn btn-primary">
+              <button type="submit" className="btn btn-primary" disabled={underage}>
                 Submit data
               </button>
               <button type="button" className="btn btn-secondary" onClick={handleSaveDraft}>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { isSignedInNow, subscribeAuthChange } from "@/lib/auth-context";
 
 /* Client-only mock storage for the prototype: no backend yet, so drafts and
-   uploads just live in localStorage. Swap for real API calls once one exists. */
+   uploads live in localStorage when the user is signed in. Guest submissions
+   are kept in memory only -- never written to localStorage -- so they don't
+   survive a reload once the person walks away without an account. */
 
 export type DraftEntry = {
   id: string;
@@ -32,6 +35,11 @@ const EMPTY_UPLOADS: UploadEntry[] = [];
 let draftsCache: DraftEntry[] | null = null;
 let uploadsCache: UploadEntry[] | null = null;
 
+// Guest (unauthenticated) data lives only here -- a plain module variable
+// resets naturally on reload, so it's never remembered across page loads.
+let guestDrafts: DraftEntry[] = [];
+let guestUploads: UploadEntry[] = [];
+
 const listeners = new Set<() => void>();
 
 function notify() {
@@ -43,7 +51,15 @@ function subscribe(callback: () => void) {
   return () => listeners.delete(callback);
 }
 
-function read<T>(key: string): T[] {
+// When sign-in state changes, drop the persisted caches so the next read
+// re-hydrates from localStorage (or, for a fresh guest, sees nothing).
+subscribeAuthChange(() => {
+  draftsCache = null;
+  uploadsCache = null;
+  notify();
+});
+
+function readPersisted<T>(key: string): T[] {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T[]) : [];
@@ -53,24 +69,34 @@ function read<T>(key: string): T[] {
 }
 
 function getDraftsSnapshot(): DraftEntry[] {
-  if (draftsCache === null) draftsCache = read<DraftEntry>(DRAFTS_KEY);
+  if (!isSignedInNow()) return guestDrafts;
+  if (draftsCache === null) draftsCache = readPersisted<DraftEntry>(DRAFTS_KEY);
   return draftsCache;
 }
 
 function getUploadsSnapshot(): UploadEntry[] {
-  if (uploadsCache === null) uploadsCache = read<UploadEntry>(UPLOADS_KEY);
+  if (!isSignedInNow()) return guestUploads;
+  if (uploadsCache === null) uploadsCache = readPersisted<UploadEntry>(UPLOADS_KEY);
   return uploadsCache;
 }
 
 function writeDrafts(value: DraftEntry[]) {
-  draftsCache = value;
-  localStorage.setItem(DRAFTS_KEY, JSON.stringify(value));
+  if (isSignedInNow()) {
+    draftsCache = value;
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(value));
+  } else {
+    guestDrafts = value;
+  }
   notify();
 }
 
 function writeUploads(value: UploadEntry[]) {
-  uploadsCache = value;
-  localStorage.setItem(UPLOADS_KEY, JSON.stringify(value));
+  if (isSignedInNow()) {
+    uploadsCache = value;
+    localStorage.setItem(UPLOADS_KEY, JSON.stringify(value));
+  } else {
+    guestUploads = value;
+  }
   notify();
 }
 
@@ -96,6 +122,10 @@ export function addUpload(entry: Omit<UploadEntry, "id">) {
   const upload: UploadEntry = { ...entry, id: crypto.randomUUID() };
   writeUploads([upload, ...getUploadsSnapshot()]);
   return upload;
+}
+
+export function deleteUpload(id: string) {
+  writeUploads(getUploadsSnapshot().filter((upload) => upload.id !== id));
 }
 
 /** Moves a draft into the upload history and removes it from drafts. */

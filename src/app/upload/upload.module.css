@@ -36,8 +36,40 @@
   border-color: var(--blue);
   box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
 }
+.field input.inputError {
+  border-color: #d64545;
+  background: #fdf1f1;
+}
+.field input.inputError:focus {
+  border-color: #d64545;
+  box-shadow: 0 0 0 4px rgba(214,69,69,0.15);
+}
+.errorText {
+  color: #c0392b;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 8px;
+}
 .field textarea { resize: vertical; min-height: 90px; }
 .fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fieldRow3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; }
+.otherInput {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.otherInput:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
+}
 
 .medicationEntry {
   border: 1.5px solid var(--border);
@@ -122,4 +154,5 @@
 @media (max-width: 860px) {
   .uploadLayout { grid-template-columns: 1fr; }
   .fieldRow { grid-template-columns: 1fr; }
+  .fieldRow3 { grid-template-columns: 1fr; }
 }

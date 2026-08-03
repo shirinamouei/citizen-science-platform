@@ -18,9 +18,9 @@ const oxygen = Oxygen({
 });
 
 export const metadata: Metadata = {
-  title: "TaperTrack",
+  title: "Cascade",
   description:
-    "Organize your tapering data in one place, and optionally donate it to support research.",
+    "Donate your tapering data to support research and future patients. Create an account to bring it all together first, no matter the format it's in.",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${halant.variable} ${oxygen.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${halant.variable} ${oxygen.variable}`}>
       <body>
         <AuthProvider>
           <Header />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import styles from "./privacy.module.css";
 
 export const metadata: Metadata = {
-  title: "Privacy | TaperTrack",
+  title: "Privacy | Cascade",
 };
 
 export default function PrivacyPage() {
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
             <p>
               Depending on where you live, you may have the right to access, correct, or delete
               your personal data, and to withdraw consent at any time. Contact us at{" "}
-              <strong>privacy@tapertrack.app</strong> for any request.
+              <strong>privacy@cascade.app</strong> for any request.
             </p>
           </div>
         </div>

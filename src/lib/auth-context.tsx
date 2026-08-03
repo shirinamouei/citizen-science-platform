@@ -31,6 +31,16 @@ function getServerSnapshot() {
   return null;
 }
 
+/** Plain (non-hook) read of sign-in state, for use outside React components. */
+export function isSignedInNow() {
+  return typeof window !== "undefined" && !!localStorage.getItem(STORAGE_KEY);
+}
+
+/** Subscribe to sign-in/out events from outside React, e.g. other client stores. */
+export function subscribeAuthChange(callback: () => void) {
+  return subscribe(callback);
+}
+
 function signIn(email: string) {
   localStorage.setItem(STORAGE_KEY, email);
   listeners.forEach((listener) => listener());

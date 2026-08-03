@@ -1,9 +1,38 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+} from "chart.js";
 import { useAuth } from "@/lib/auth-context";
-import { discardDraft, promoteDraft, useDrafts, useUploads } from "@/lib/upload-store";
+import { deleteUpload, discardDraft, promoteDraft, useDrafts, useUploads, type UploadEntry } from "@/lib/upload-store";
 import styles from "./profile.module.css";
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
+
+function buildContributionSeries(uploads: UploadEntry[]) {
+  const chronological = [...uploads].reverse();
+  const labels: string[] = [];
+  const data: number[] = [];
+  let cumulative = 0;
+  chronological.forEach((upload) => {
+    cumulative += 1;
+    if (labels[labels.length - 1] === upload.date) {
+      data[data.length - 1] = cumulative;
+    } else {
+      labels.push(upload.date);
+      data.push(cumulative);
+    }
+  });
+  return { labels, data };
+}
 
 function buildStats(totalUploads: number, lastUpload: string) {
   return [
@@ -91,6 +120,7 @@ export default function ProfilePage() {
   const uploads = useUploads();
   const stats = buildStats(uploads.length, uploads[0]?.date ?? "—");
   const milestones = buildMilestones(uploads.length);
+  const contributionSeries = buildContributionSeries(uploads);
 
   return (
     <>
@@ -155,21 +185,59 @@ export default function ProfilePage() {
                 <div className={styles.chartCardHead}>
                   <h3>Your contributions over time</h3>
                 </div>
-                <div className={styles.chartEmpty}>
-                  <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                    <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#a9b4c9" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                  <strong>No contributions yet</strong>
-                  <span>Upload your first entry to start tracking your progress here.</span>
-                </div>
+                {uploads.length > 0 ? (
+                  <div className={styles.chartCanvas}>
+                    <Line
+                      data={{
+                        labels: contributionSeries.labels,
+                        datasets: [
+                          {
+                            label: "Total contributions",
+                            data: contributionSeries.data,
+                            borderColor: "#FF9500",
+                            backgroundColor: "rgba(255,149,0,0.12)",
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3,
+                            pointBackgroundColor: "#FF9500",
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                          x: { grid: { display: false }, ticks: { color: "#5b6b85", font: { size: 11 } } },
+                          y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: "#5b6b85", font: { size: 11 } },
+                            grid: { color: "#e3e9f7" },
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.chartEmpty}>
+                    <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                      <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#a9b4c9" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                    <strong>No contributions yet</strong>
+                    <span>Upload your first entry to start tracking your progress here.</span>
+                  </div>
+                )}
               </div>
 
               <div className={`card ${styles.streakCard}`}>
                 <div className={styles.streakFlame}>
-                  <svg viewBox="0 0 24 24" fill="none">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
                     <path
-                      d="M12 2c1 3-2 4-2 7a4 4 0 008 0c0-2-1-3-1-3s1 4-2 4-1-4-1-4-2 2-2 4a4 4 0 008 0c0-5-4-6-4-8-3 2-4 5-4 8 0 0-4-3-4-8z"
-                      fill="white"
+                      d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                      stroke="white"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
                 </div>
@@ -236,6 +304,7 @@ export default function ProfilePage() {
                       <th>Dose</th>
                       <th>Notes</th>
                       <th>Status</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -253,6 +322,23 @@ export default function ProfilePage() {
                           >
                             {upload.status === "synced" ? "Synced" : "Processing"}
                           </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.deleteBtn}
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Delete this entry? This removes it from the database and can't be undone."
+                                )
+                              ) {
+                                deleteUpload(upload.id);
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))}
