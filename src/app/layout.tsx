@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
+import { Halant, Oxygen } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
+
+const halant = Halant({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-halant",
+});
+
+const oxygen = Oxygen({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-oxygen",
+});
 
 export const metadata: Metadata = {
   title: "TaperTrack",
@@ -16,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${halant.variable} ${oxygen.variable}`}>
       <body>
         <AuthProvider>
           <Header />

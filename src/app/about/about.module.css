@@ -1,17 +1,17 @@
 .aboutHero { padding: 64px 0 8px; text-align: center; }
-.aboutHero h1 { max-width: 780px; margin: 0 auto; }
-.aboutHero p.lede { max-width: 640px; margin: 16px auto 0; text-align: center; }
+.aboutHero h1 { max-width: 780px; margin: 0 auto; text-wrap: balance; }
+.aboutHero p:global(.lede) { max-width: 580px; margin: 16px auto 0; text-align: center; text-wrap: balance; }
 
 .missionBand {
   margin-top: 56px;
-  background: linear-gradient(135deg, var(--navy), var(--navy-soft));
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
   border-radius: 24px;
   padding: 56px;
-  color: var(--white);
   text-align: center;
 }
-.missionBand .eyebrow { justify-content: center; color: var(--gold); }
-.missionBand h2 { color: var(--white); max-width: 760px; margin: 0 auto; font-size: 28px; }
+.missionBand h2 { color: var(--navy); max-width: 700px; margin: 0 auto; font-size: 28px; text-wrap: balance; }
 
 .valueGrid {
   display: grid;
@@ -50,7 +50,7 @@
   padding: 40px;
   text-align: center;
 }
-.teamNote p { max-width: 620px; margin: 12px auto 0; color: var(--text-muted); }
+.teamNote p { max-width: 620px; margin: 12px auto 0; color: var(--text-muted); text-wrap: balance; }
 
 @media (max-width: 860px) {
   .valueGrid { grid-template-columns: 1fr; }

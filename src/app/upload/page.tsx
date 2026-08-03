@@ -2,9 +2,14 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { addUpload, saveDraft } from "@/lib/upload-store";
 import styles from "./upload.module.css";
 
 let nextId = 1;
+
+function formatToday() {
+  return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 const checkIcon = (
   <svg viewBox="0 0 24 24" fill="none">
@@ -16,13 +21,15 @@ const checkIcon = (
 const dataHandlingPoints = [
   "Identifiers removed before storage",
   "Used only in aggregate, never sold",
-  "Delete your contributions anytime",
+  "Delete your contributions anytime*",
 ];
 
 export default function UploadPage() {
   const [medicationIds, setMedicationIds] = useState<number[]>([nextId++]);
   const [submitted, setSubmitted] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   function addMedication() {
     setMedicationIds((prev) => [...prev, nextId++]);
@@ -30,6 +37,29 @@ export default function UploadPage() {
 
   function removeMedication(id: number) {
     setMedicationIds((prev) => prev.filter((m) => m !== id));
+  }
+
+  function collectEntry() {
+    const data = new FormData(formRef.current ?? undefined);
+    const meds = medicationIds
+      .map((id) => (data.get(`med-name-${id}`) as string)?.trim())
+      .filter(Boolean);
+    const doses = medicationIds
+      .map((id) => (data.get(`med-dose-${id}`) as string)?.trim())
+      .filter(Boolean);
+    const notes = ((data.get("notes") as string) || "").trim();
+    return {
+      date: formatToday(),
+      med: meds.length ? meds.join(", ") : "Untitled entry",
+      dose: doses.length ? doses.map((d) => `${d}mg`).join(", ") : "—",
+      notes: notes || "N/A",
+    };
+  }
+
+  function handleSaveDraft() {
+    saveDraft(collectEntry());
+    setDraftSaved(true);
+    setSubmitted(false);
   }
 
   return (
@@ -48,15 +78,23 @@ export default function UploadPage() {
       <section className="section-tight" style={{ paddingTop: "32px" }}>
         <div className={`wrap ${styles.uploadLayout}`}>
           <form
+            ref={formRef}
             className={`card ${styles.formCard}`}
             onSubmit={(e) => {
               e.preventDefault();
+              addUpload({ ...collectEntry(), status: "synced" });
               setSubmitted(true);
+              setDraftSaved(false);
             }}
           >
-            <label style={{ display: "block", fontSize: "13.5px", fontWeight: 600, color: "var(--navy)", marginBottom: "12px" }}>
-              Medications <span className={styles.hint}>(one entry per medication)</span>
+            <label style={{ display: "block", fontSize: "13.5px", fontWeight: 600, color: "var(--navy)", marginBottom: "6px" }}>
+              Psychiatric medication(s) you&apos;re currently tapering
             </label>
+            <p className={styles.sectionNote}>
+              Please list the name of only one psychiatric medication per entry. If you&apos;re
+              tapering more than one at the same time, use &ldquo;+ Add another medication&rdquo;
+              below for each additional one.
+            </p>
 
             <div>
               {medicationIds.map((id, index) => (
@@ -75,28 +113,39 @@ export default function UploadPage() {
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.field}>
-                      <label>Medication name</label>
-                      <input type="text" placeholder="e.g. Sertraline" required />
+                      <label>
+                        Medication name <span className={styles.hint}>(one medication only)</span>
+                      </label>
+                      <input type="text" name={`med-name-${id}`} placeholder="e.g. Sertraline" required />
                     </div>
                     <div className={styles.field}>
                       <label>
-                        Starting dose <span className={styles.hint}>(mg)</span>
+                        Starting dose <span className={styles.hint}>(mg, best estimate is fine)</span>
                       </label>
-                      <input type="number" placeholder="e.g. 100" required />
+                      <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
                     </div>
                   </div>
                   <div className={styles.fieldRow}>
                     <div className={styles.field}>
-                      <label>Taper start date</label>
+                      <label>
+                        Taper start date <span className={styles.hint}>(approximate is fine)</span>
+                      </label>
                       <input type="date" />
                     </div>
                     <div className={styles.field}>
-                      <label>Taper method</label>
-                      <select>
+                      <label>
+                        Taper method <span className={styles.hint}>(current or most recent)</span>
+                      </label>
+                      <select defaultValue="">
+                        <option value="" disabled>
+                          Select one
+                        </option>
                         <option>Direct / linear reduction</option>
                         <option>Hyperbolic reduction</option>
                         <option>Alternating dose</option>
                         <option>Liquid titration</option>
+                        <option>Switched methods along the way</option>
+                        <option>Not sure / don&apos;t know the name</option>
                         <option>Other</option>
                       </select>
                     </div>
@@ -112,12 +161,12 @@ export default function UploadPage() {
               <label>
                 Symptoms / notes <span className={styles.hint}>(optional)</span>
               </label>
-              <textarea placeholder="Anything you noticed during this period..." />
+              <textarea name="notes" placeholder="Anything you noticed during this period..." />
             </div>
 
             <div className={styles.field}>
               <label>
-                Attach a file <span className={styles.hint}>(pharmacy printout, spreadsheet, or CSV, optional)</span>
+                Attach a file <span className={styles.hint}>(pharmacy printout, journal entry, spreadsheet, CSV, etc. Optional)</span>
               </label>
               <div className={styles.dropzone} onClick={() => fileInputRef.current?.click()}>
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -146,13 +195,18 @@ export default function UploadPage() {
               <button type="submit" className="btn btn-primary">
                 Submit data
               </button>
-              <button type="button" className="btn btn-secondary">
+              <button type="button" className="btn btn-secondary" onClick={handleSaveDraft}>
                 Save as draft
               </button>
             </div>
             {submitted && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#1a7f4a", fontSize: "14px", fontWeight: 600 }}>
                 ✓ Thanks. Your entry has been added to your upload history.
+              </div>
+            )}
+            {draftSaved && (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b8690a", fontSize: "14px", fontWeight: 600 }}>
+                ✓ Saved as a draft. You can find it on your profile page.
               </div>
             )}
           </form>
@@ -169,17 +223,10 @@ export default function UploadPage() {
                   </li>
                 ))}
               </ul>
-            </div>
-            <div className={`card ${styles.sideCard}`}>
-              <h3>Prefer the app?</h3>
-              <p>Log doses on the go and sync automatically with your profile.</p>
-              <div className={styles.badgeRow}>
-                <span className="pill">iOS</span>
-                <span className="pill">Android</span>
-              </div>
-              <Link href="/#qr" className="btn btn-dark mt-16" style={{ width: "100%" }}>
-                Get the app
-              </Link>
+              <p className={styles.footnote}>
+                *Deleting your contributions removes them from future use, but can&apos;t undo
+                any research already conducted using that data.
+              </p>
             </div>
           </aside>
         </div>

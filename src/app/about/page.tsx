@@ -31,7 +31,7 @@ const values = [
     ),
   },
   {
-    background: "var(--blue)",
+    background: "#e3f1fc",
     title: "Any format, one place",
     description:
       "Handwritten notes, PDFs, spreadsheets, even AI chat exports. We organize whatever you already have into one view of your taper.",
@@ -50,9 +50,6 @@ export default function AboutPage() {
     <main>
       <section className={styles.aboutHero}>
         <div className="wrap">
-          <div className="eyebrow" style={{ justifyContent: "center" }}>
-            Our mission
-          </div>
           <h1>Tapering off medication shouldn&apos;t rely on guesswork.</h1>
           <p className="lede">
             Tapering data is often scattered across notebooks, PDFs, spreadsheets, and chat
@@ -63,7 +60,6 @@ export default function AboutPage() {
 
         <div className="wrap">
           <div className={styles.missionBand}>
-            <div className="eyebrow">Why TaperTrack exists</div>
             <h2>
               Bring together your diary entries, PDFs, spreadsheets, and AI chat logs into one
               place. Donate it anonymously to help the next person taper with more confidence.
@@ -75,9 +71,6 @@ export default function AboutPage() {
       <section className="section-tight">
         <div className="wrap">
           <div className="text-center mb-48">
-            <div className="eyebrow" style={{ justifyContent: "center" }}>
-              What we stand for
-            </div>
             <h2>The principles behind the platform</h2>
           </div>
           <div className={styles.valueGrid}>
@@ -94,13 +87,12 @@ export default function AboutPage() {
 
           <div className={styles.storyGrid}>
             <div>
-              <div className="eyebrow">Where this started</div>
               <h2>Built after watching taper data go nowhere</h2>
               <p className="lede mt-16" style={{ maxWidth: "520px" }}>
                 Tapering is often a solitary process, and the tools people use to track it
                 (notes apps, spreadsheets, AI assistants, notebooks) rarely talk to each other.
                 TaperTrack brings that record into one place, so you get a clear picture of your
-                taper. You can also choose to donate it anonymously to help the next person.
+                taper. By donating it anonymously, you can help the next person experience a safer taper.
               </p>
             </div>
             <div className={styles.storyVisual}>

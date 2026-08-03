@@ -1,92 +1,206 @@
 .hero { padding: 72px 0 40px; }
 .heroGrid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 56px; align-items: center; }
-.heroActions { display: flex; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
 .heroStats { display: flex; gap: 36px; margin-top: 44px; }
 .heroStats div strong { display: block; font-size: 26px; color: var(--navy); font-weight: 800; }
 .heroStats div span { font-size: 13px; color: var(--text-muted); }
 
-.stage {
-  position: relative;
-  min-height: 420px;
-  border-radius: 22px;
+/* ---------- Walkthrough animation ---------- */
+.walkthrough { display: flex; flex-direction: column; }
+
+.walkthroughStage { position: relative; height: 400px; }
+.phase {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px;
+  opacity: 0;
+  animation: phaseCycle 24s infinite;
+}
+.phase1 { animation-delay: 0s; }
+.phase2 { animation-delay: 6s; }
+.phase3 { animation-delay: 12s; }
+.phase4 { animation-delay: 18s; animation-name: phase4Cycle; }
+@keyframes phaseCycle {
+  0%, 1% { opacity: 0; transform: translateX(36px); }
+  5%, 22% { opacity: 1; transform: translateX(0); }
+  26%, 100% { opacity: 0; transform: translateX(-36px); }
+}
+@keyframes phase4Cycle {
+  0%, 1% { opacity: 0; transform: translateX(36px); }
+  5%, 14% { opacity: 1; transform: translateX(0); }
+  18%, 100% { opacity: 0; transform: translateX(-36px); }
+}
+
+/* Step 1: journal entry */
+.journalCard {
+  width: 380px;
   background: var(--white);
   border: 1px solid var(--border);
+  border-radius: 18px;
   box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  padding: 40px 32px;
+  padding: 30px 32px;
 }
-.stageCaption {
-  font-size: 13px; font-weight: 700; letter-spacing: 0.04em;
-  text-transform: uppercase; color: var(--text-muted);
+.journalDate {
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 16px;
 }
-.flow {
-  position: relative;
-  display: flex; justify-content: space-between;
-  margin: auto 0;
+.journalBody { font-size: 16px; line-height: 2; color: var(--navy); }
+.typeLine {
+  display: block;
+  white-space: nowrap;
+  clip-path: inset(0 100% 0 0);
+  animation-duration: 24s;
+  animation-iteration-count: infinite;
+  animation-delay: 0s;
 }
-.step {
-  display: flex; flex-direction: column; align-items: center;
-  width: 108px; gap: 18px;
+.typeDate { animation-name: revealDate; animation-timing-function: steps(11, jump-end); }
+.typeLine1 { animation-name: reveal1; animation-timing-function: steps(36, jump-end); }
+.typeLine2 { animation-name: reveal2; animation-timing-function: steps(40, jump-end); }
+.typeLine3 { animation-name: reveal3; animation-timing-function: steps(39, jump-end); }
+@keyframes revealDate {
+  0%, 5% { clip-path: inset(0 100% 0 0); }
+  6.3%, 100% { clip-path: inset(0 0% 0 0); }
 }
-.node {
-  width: 108px; height: 108px;
-  background: var(--bg);
+@keyframes reveal1 {
+  0%, 6.9% { clip-path: inset(0 100% 0 0); }
+  10.7%, 100% { clip-path: inset(0 0% 0 0); }
+}
+@keyframes reveal2 {
+  0%, 11.3% { clip-path: inset(0 100% 0 0); }
+  15.5%, 100% { clip-path: inset(0 0% 0 0); }
+}
+@keyframes reveal3 {
+  0%, 16.1% { clip-path: inset(0 100% 0 0); }
+  19.9%, 100% { clip-path: inset(0 0% 0 0); }
+}
+.cursor {
+  display: inline-block; width: 2px; height: 1em;
+  background: var(--orange); margin-left: 2px; vertical-align: text-bottom;
+  animation: blink 0.9s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Step 2: securely uploaded */
+.journalCardMini {
+  width: 340px;
+  background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 26px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 18px 22px;
+}
+.journalSnippet {
+  font-size: 13.5px; color: var(--text-muted); margin-top: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mockUploadBtn { animation: btnPress 24s infinite; animation-delay: 6s; cursor: default; }
+@keyframes btnPress {
+  0%, 7% { transform: scale(1); }
+  9% { transform: scale(0.93); }
+  11%, 100% { transform: scale(1); }
+}
+.progressTrack {
+  width: 240px; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
+}
+.progressFill {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), var(--gold));
+  animation: progressFill 24s infinite; animation-delay: 6s;
+}
+@keyframes progressFill {
+  0%, 10% { width: 0%; }
+  18%, 100% { width: 100%; }
+}
+
+/* Step 3: anonymized */
+.checkBadge {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: #e6f6ec;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 18px rgba(17,40,69,0.07);
-  z-index: 2;
+  box-shadow: 0 0 0 10px rgba(26,127,74,0.08);
+  animation: checkPop 24s infinite; animation-delay: 12s;
 }
-.node svg { width: 50px; height: 50px; }
-.step1 { animation: pop 4.5s ease-in-out infinite; }
-.step2 { animation: pop 4.5s ease-in-out infinite; animation-delay: 1.1s; }
-.step3 { animation: pop 4.5s ease-in-out infinite; animation-delay: 2.2s; }
-.step4 { animation: pop 4.5s ease-in-out infinite; animation-delay: 3.3s; }
-@keyframes pop {
-  0%, 8% { transform: scale(1); }
-  12% { transform: scale(1.1); box-shadow: 0 10px 26px rgba(255,149,0,0.3); }
-  20%, 100% { transform: scale(1); }
+@keyframes checkPop {
+  0%, 3% { transform: scale(0.4); opacity: 0; }
+  10% { transform: scale(1.08); opacity: 1; }
+  14%, 100% { transform: scale(1); opacity: 1; }
 }
-.nodeLabel {
-  font-size: 13.5px; font-weight: 600; color: var(--navy);
-  text-align: center; line-height: 1.4;
+.anonLabel { font-size: 14px; font-weight: 600; color: var(--navy); }
+
+/* Step 4: joins the dataset */
+.datasetList { display: flex; flex-direction: column; gap: 10px; width: 320px; }
+.datasetRow {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 16px; font-size: 13px; color: var(--text-muted); font-weight: 500;
 }
-.track {
-  position: absolute;
-  top: 54px; left: 54px; right: 54px;
-  height: 2px;
-  background: var(--border);
-  z-index: 1;
-  border-radius: 2px;
+.datasetRowNew {
+  color: var(--navy); font-weight: 700; border-color: var(--orange);
+  box-shadow: 0 6px 18px rgba(255,149,0,0.15);
+  animation: rowInsert 24s infinite; animation-delay: 18s;
+}
+.datasetRowOld { animation: rowShiftDown 24s infinite; animation-delay: 18s; }
+@keyframes rowInsert {
+  0%, 6% { opacity: 0; transform: translateY(-55px); }
+  7.5%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes rowShiftDown {
+  0%, 6% { transform: translateY(-55px); }
+  7.5%, 100% { transform: translateY(0); }
+}
+.datasetDot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
+
+/* Caption: current step text at the bottom */
+.walkthroughCaption {
+  position: relative;
+  height: 78px;
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
   overflow: hidden;
 }
-.track::after {
-  content: "";
-  position: absolute; top: 0; left: -30%;
-  width: 30%; height: 100%;
-  background: linear-gradient(90deg, transparent, var(--orange), var(--gold), transparent);
-  animation: travel 4.5s linear infinite;
+.captionItem {
+  position: absolute; top: 20px; left: 0; right: 0;
+  opacity: 0;
+  animation: phaseCycle 24s infinite;
 }
-@keyframes travel {
-  0% { left: -30%; }
-  85%, 100% { left: 100%; }
+.caption1 { animation-delay: 0s; }
+.caption2 { animation-delay: 6s; }
+.caption3 { animation-delay: 12s; }
+.caption4 { animation-delay: 18s; animation-name: phase4Cycle; }
+.captionItem h3 { font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.captionItem p { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+.captionStepNum {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 7px;
+  background: var(--navy); color: var(--white);
+  font-size: 11px; font-weight: 700;
 }
-.pulseDot {
-  position: absolute;
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--orange);
-  top: 54px; margin-top: -5px;
-  animation: dotmove 4.5s linear infinite;
-  z-index: 2;
-  box-shadow: 0 0 0 4px rgba(255,149,0,0.18);
+
+.captionDots { display: flex; gap: 6px; justify-content: center; margin-top: 16px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); animation: dotActive 24s infinite; }
+.dot1 { animation-delay: 0s; }
+.dot2 { animation-delay: 6s; }
+.dot3 { animation-delay: 12s; }
+.dot4 { animation-delay: 18s; animation-name: dot4Active; }
+@keyframes dotActive {
+  0%, 1% { background: var(--border); transform: scale(1); }
+  5%, 22% { background: var(--orange); transform: scale(1.3); }
+  26%, 100% { background: var(--border); transform: scale(1); }
 }
-@keyframes dotmove {
-  0% { left: 54px; opacity: 0; }
-  5% { opacity: 1; }
-  90% { left: calc(100% - 64px); opacity: 1; }
-  96%, 100% { opacity: 0; }
+@keyframes dot4Active {
+  0%, 1% { background: var(--border); transform: scale(1); }
+  5%, 14% { background: var(--orange); transform: scale(1.3); }
+  18%, 100% { background: var(--border); transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walkthroughStage *, .captionItem, .dot { animation: none !important; }
+  .phase, .captionItem { opacity: 0; }
+  .phase1, .caption1 { opacity: 1; }
+  .typeDate, .typeLine1, .typeLine2, .typeLine3 { clip-path: inset(0 0% 0 0); }
+  .datasetRowOld { transform: translateY(0); }
+  .dot1 { background: var(--orange); }
 }
 
 .stepsStrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
@@ -97,6 +211,23 @@
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px; margin-bottom: 16px;
 }
+
+/* ---------- Log in / continue as guest ---------- */
+.accessGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  max-width: 760px; margin: 0 auto;
+}
+.accessCard { padding: 32px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.accessIcon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.accessCard p { margin-top: 8px; }
+
+/* ---------- Mission brief ---------- */
+.missionBrief { max-width: 640px; margin: 0 auto; text-align: center; }
+.missionBrief h2 { margin-top: 8px; }
 
 .qrSection {
   background: var(--navy);
@@ -130,14 +261,11 @@
 
 @media (max-width: 860px) {
   .heroGrid { grid-template-columns: 1fr; }
-  .stage { min-height: 0; padding: 32px 24px; }
-  .track, .pulseDot { display: none; }
-  .flow { flex-wrap: wrap; justify-content: center; gap: 28px 16px; margin: 0; }
-  .step { width: calc(50% - 8px); gap: 12px; }
-  .node { width: 84px; height: 84px; border-radius: 20px; margin: 0 auto; }
-  .node svg { width: 40px; height: 40px; }
-  .nodeLabel { font-size: 12.5px; }
+  .walkthroughStage { height: 360px; }
+  .journalCard, .journalCardMini, .datasetList { width: 100%; max-width: 340px; }
+  .walkthroughCaption { height: 100px; }
   .stepsStrip { grid-template-columns: 1fr 1fr; }
+  .accessGrid { grid-template-columns: 1fr; }
   .qrSection { grid-template-columns: 1fr; text-align: center; }
   .heroStats { flex-wrap: wrap; row-gap: 18px; }
 }

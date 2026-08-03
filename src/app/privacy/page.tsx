@@ -118,8 +118,9 @@ export default function PrivacyPage() {
             <h2 id="control">Your controls</h2>
             <p>
               From your profile, you can export everything you&apos;ve submitted, edit past
-              entries, or permanently delete your contributions, including from the anonymized
-              dataset where technically possible.
+              entries, or delete a submission at any time. Deleting a submission removes it from
+              future use, but if it was already incorporated into a research dataset, it can&apos;t
+              be pulled back out of research that&apos;s already been conducted.
             </p>
 
             <h2 id="rights">Your rights</h2>

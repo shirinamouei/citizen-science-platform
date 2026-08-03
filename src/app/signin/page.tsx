@@ -145,8 +145,8 @@ export default function SignInPage() {
             </div>
             <h1 style={{ fontSize: "32px" }}>Sign in, or create an account</h1>
             <p className="lede" style={{ margin: "12px auto 0", textAlign: "center" }}>
-              An account keeps your tapering history and streaks in sync. You can also skip
-              this and continue as a guest.
+              An account allows you to easily monitor the status and contents of your past uploads, 
+              and keep track of them over time.
             </p>
           </div>
 
