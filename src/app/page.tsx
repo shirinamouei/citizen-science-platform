@@ -26,8 +26,8 @@ function getWalkthroughDates() {
 }
 
 const howItWorksSteps = [
-  { title: "Create a profile", description: "Choose an anonymous or named profile." },
-  { title: "Log your taper", description: "Enter medication, dose, and tapering notes as you go." },
+  { title: "Create a profile", description: "Create an account, including as little or as much information as you want." },
+  { title: "Log your data", description: "Enter medications, doses, and tapering notes as you go." },
   { title: "We strip identifiers", description: "Personal details are removed before data is aggregated." },
   { title: "Data helps others", description: "Aggregated trends inform research and future patients." },
 ];
@@ -46,23 +46,22 @@ export default function Home() {
               <span className={styles.heroHighlight}>taper safer</span>.
             </h1>
             <p className="lede mt-16">
-              Donate your tapering data to support research and help future patients taper
-              more safely. Create a free account to bring it all together first, no matter
-              what format it&apos;s already in.
+              Donate your tapering data to support research and help future patients taper off psychiatric medications
+              more safely. Create an account to save your data and make continued contributions over a longer period of time.
             </p>
             <div className={styles.heroStats}>
               <div>
                 <strong>100%</strong>
-                <span>Voluntary &amp; anonymized</span>
+                <span>Anonymized</span>
               </div>
               <div>
                 <strong>0</strong>
-                <span>Data ever sold</span>
+                <span>Data sold</span>
               </div>
-              <div>
+              {/* <div>
                 <strong>24/7</strong>
                 <span>Export or delete anytime</span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -77,8 +76,8 @@ export default function Home() {
             <div className={styles.qrText}>
               <h2>Get the Cascade app</h2>
               <p>
-                Log doses in seconds and get gentle reminders, right from your phone. Scan to
-                download.
+                Log doses, symptoms, and more in seconds and get customized reminders, right from your phone. Scan to
+                download and start your journey. 
               </p>
               <div className={styles.storeBadges}>
                 <div className={styles.storeBadge}>App Store</div>
@@ -112,7 +111,7 @@ export default function Home() {
       <section className="section-tight">
         <div className="wrap">
           <div className="text-center mb-48">
-            <h2>Sign in, or dive right in as a guest</h2>
+            <h2>Sign in, or donate data as a guest</h2>
           </div>
           <div className={styles.accessGrid}>
             <div className={`card ${styles.accessCard}`}>
@@ -152,9 +151,9 @@ export default function Home() {
       <section className="section-tight">
         <div className="wrap">
           <div className={styles.missionBrief}>
-            <h2>Tapering off medication shouldn&apos;t rely on guesswork.</h2>
+            <h2>Tapering off psychiatric medication shouldn't rely on guesswork.</h2>
             <p className="lede mt-16" style={{ maxWidth: "520px", margin: "16px auto 0", textAlign: "center" }}>
-              Your data, combined with hundreds of others, helps researchers and future
+              Your data helps our mission as researchers to help future
               patients taper more safely.
             </p>
             <Link href="/about" className="btn btn-secondary mt-24">
