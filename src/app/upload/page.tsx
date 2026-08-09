@@ -188,7 +188,7 @@ export default function UploadPage() {
       <section className={styles.uploadHero}>
         <div className="wrap">
           <div className="eyebrow">Step 1 of 1, about 2 minutes</div>
-          <h1 style={{ fontSize: "38px" }}>Log your tapering data</h1>
+          <h1 style={{ fontSize: "clamp(26px, 8vw, 38px)" }}>Log your tapering data</h1>
           <p className="lede mt-16">
             Share as much or as little as you&apos;re comfortable with. Anything you submit is
             stripped of identifying details before it&apos;s added to the shared dataset.

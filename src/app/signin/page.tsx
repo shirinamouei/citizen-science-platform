@@ -189,7 +189,7 @@ export default function SignInPage() {
             <div className="eyebrow" style={{ justifyContent: "center" }}>
               Your account
             </div>
-            <h1 style={{ fontSize: "32px" }}>Sign in, or create an account</h1>
+            <h1 style={{ fontSize: "clamp(24px, 7vw, 32px)" }}>Sign in, or create an account</h1>
             <p className="lede" style={{ margin: "12px auto 0", textAlign: "center" }}>
               An account lets you bring tapering data from different sources, like
               spreadsheets, PDFs, and past notes, into one place, and keep track of

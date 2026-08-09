@@ -44,37 +44,39 @@ export default function PrivacyPage() {
               notes about symptoms or experience. If you upload a file, we extract only the
               relevant tapering fields from it.
             </p>
-            <table className={styles.dataTable}>
-              <thead>
-                <tr>
-                  <th>Data type</th>
-                  <th>Collected?</th>
-                  <th>Linked to your identity?</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Medication &amp; dose schedule</td>
-                  <td>Yes</td>
-                  <td>No, after processing</td>
-                </tr>
-                <tr>
-                  <td>Symptom notes</td>
-                  <td>Only if you add them</td>
-                  <td>No, after processing</td>
-                </tr>
-                <tr>
-                  <td>Name / email</td>
-                  <td>Only for your login</td>
-                  <td>Kept separate from tapering data</td>
-                </tr>
-                <tr>
-                  <td>Device / location</td>
-                  <td>No</td>
-                  <td>N/A</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className={styles.tableScroll}>
+              <table className={styles.dataTable}>
+                <thead>
+                  <tr>
+                    <th>Data type</th>
+                    <th>Collected?</th>
+                    <th>Linked to your identity?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Medication &amp; dose schedule</td>
+                    <td>Yes</td>
+                    <td>No, after processing</td>
+                  </tr>
+                  <tr>
+                    <td>Symptom notes</td>
+                    <td>Only if you add them</td>
+                    <td>No, after processing</td>
+                  </tr>
+                  <tr>
+                    <td>Name / email</td>
+                    <td>Only for your login</td>
+                    <td>Kept separate from tapering data</td>
+                  </tr>
+                  <tr>
+                    <td>Device / location</td>
+                    <td>No</td>
+                    <td>N/A</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <h2 id="why">Why we collect it</h2>
             <p>

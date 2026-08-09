@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -14,6 +15,11 @@ const navLinks = [
 export default function Header() {
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   return (
     <header className="site-header">
@@ -22,7 +28,18 @@ export default function Header() {
           <BrandMark />
           Cascade
         </Link>
-        <div className="nav-right">
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label="Toggle menu"
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <div className={`nav-right ${isMenuOpen ? "nav-right-open" : ""}`}>
           <ul className="nav-links">
             {navLinks.map((link) => (
               <li key={link.href}>

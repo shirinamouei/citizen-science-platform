@@ -1,7 +1,7 @@
 .uploadHero { padding: 56px 0 8px; }
 .uploadLayout {
   display: grid;
-  grid-template-columns: 1.3fr 0.9fr;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
   gap: 40px;
   align-items: start;
 }
@@ -51,8 +51,8 @@
   margin-top: 8px;
 }
 .field textarea { resize: vertical; min-height: 90px; }
-.fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.fieldRow3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; }
+.fieldRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.fieldRow3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 .otherInput {
   width: 100%;
   margin-top: 8px;
@@ -152,7 +152,12 @@
 .footnote { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
 
 @media (max-width: 860px) {
-  .uploadLayout { grid-template-columns: 1fr; }
-  .fieldRow { grid-template-columns: 1fr; }
-  .fieldRow3 { grid-template-columns: 1fr; }
+  .uploadLayout { grid-template-columns: minmax(0, 1fr); }
+  .fieldRow { grid-template-columns: minmax(0, 1fr); }
+  .fieldRow3 { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .submitRow { flex-direction: column; align-items: stretch; }
+  .submitRow .btn { width: 100%; }
 }

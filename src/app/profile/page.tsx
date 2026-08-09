@@ -251,99 +251,103 @@ export default function ProfilePage() {
             {drafts.length > 0 && (
               <div className={`card ${styles.historyCard}`}>
                 <h3 className="mb-16">Drafts</h3>
-                <table className={styles.history}>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Medication</th>
-                      <th>Dose</th>
-                      <th>Notes</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drafts.map((draft) => (
-                      <tr key={draft.id}>
-                        <td>{draft.date}</td>
-                        <td>{draft.med}</td>
-                        <td>{draft.dose}</td>
-                        <td>{draft.notes}</td>
-                        <td>
-                          <div className={styles.draftActions}>
-                            <button
-                              type="button"
-                              className={styles.draftUploadBtn}
-                              onClick={() => promoteDraft(draft.id)}
-                            >
-                              Upload
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.draftDiscardBtn}
-                              onClick={() => discardDraft(draft.id)}
-                            >
-                              Discard
-                            </button>
-                          </div>
-                        </td>
+                <div className={styles.tableScroll}>
+                  <table className={styles.history}>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Medication</th>
+                        <th>Dose</th>
+                        <th>Notes</th>
+                        <th></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {drafts.map((draft) => (
+                        <tr key={draft.id}>
+                          <td>{draft.date}</td>
+                          <td>{draft.med}</td>
+                          <td>{draft.dose}</td>
+                          <td>{draft.notes}</td>
+                          <td>
+                            <div className={styles.draftActions}>
+                              <button
+                                type="button"
+                                className={styles.draftUploadBtn}
+                                onClick={() => promoteDraft(draft.id)}
+                              >
+                                Upload
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.draftDiscardBtn}
+                                onClick={() => discardDraft(draft.id)}
+                              >
+                                Discard
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
             <div className={`card ${styles.historyCard}`}>
               <h3 className="mb-16">Upload history</h3>
               {uploads.length > 0 ? (
-                <table className={styles.history}>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Medication</th>
-                      <th>Dose</th>
-                      <th>Notes</th>
-                      <th>Status</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {uploads.map((upload) => (
-                      <tr key={upload.id}>
-                        <td>{upload.date}</td>
-                        <td>{upload.med}</td>
-                        <td>{upload.dose}</td>
-                        <td>{upload.notes}</td>
-                        <td>
-                          <span
-                            className={`${styles.statusChip} ${
-                              upload.status === "synced" ? styles.statusChipSynced : styles.statusChipPending
-                            }`}
-                          >
-                            {upload.status === "synced" ? "Synced" : "Processing"}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className={styles.deleteBtn}
-                            onClick={() => {
-                              if (
-                                window.confirm(
-                                  "Delete this entry? This removes it from the database and can't be undone."
-                                )
-                              ) {
-                                deleteUpload(upload.id);
-                              }
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </td>
+                <div className={styles.tableScroll}>
+                  <table className={styles.history}>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Medication</th>
+                        <th>Dose</th>
+                        <th>Notes</th>
+                        <th>Status</th>
+                        <th></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {uploads.map((upload) => (
+                        <tr key={upload.id}>
+                          <td>{upload.date}</td>
+                          <td>{upload.med}</td>
+                          <td>{upload.dose}</td>
+                          <td>{upload.notes}</td>
+                          <td>
+                            <span
+                              className={`${styles.statusChip} ${
+                                upload.status === "synced" ? styles.statusChipSynced : styles.statusChipPending
+                              }`}
+                            >
+                              {upload.status === "synced" ? "Synced" : "Processing"}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className={styles.deleteBtn}
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    "Delete this entry? This removes it from the database and can't be undone."
+                                  )
+                                ) {
+                                  deleteUpload(upload.id);
+                                }
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className={styles.historyEmpty}>
                   <span>Your uploads will show up here once you submit your first entry.</span>

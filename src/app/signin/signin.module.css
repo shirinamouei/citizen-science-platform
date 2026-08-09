@@ -78,7 +78,7 @@
   font-weight: 600;
   margin-top: 8px;
 }
-.fieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fieldRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 
 .forgotLink { display: block; text-align: right; font-size: 13px; color: var(--navy); font-weight: 600; margin: -10px 0 20px; }
 .forgotLink:hover { text-decoration: underline; }
@@ -107,7 +107,7 @@
 .segBtn:hover:not(.segBtnActive) { border-color: var(--blue); background: var(--lavender); }
 .segBtnActive { background: var(--navy); border-color: var(--navy); color: var(--white); }
 
-.checkboxGroup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.checkboxGroup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .checkboxItem {
   display: flex;
   align-items: flex-start;
@@ -168,7 +168,7 @@
 .guestInline { text-align: center; margin-top: 16px; }
 
 @media (max-width: 640px) {
-  .fieldRow { grid-template-columns: 1fr; }
-  .checkboxGroup { grid-template-columns: 1fr; }
+  .fieldRow { grid-template-columns: minmax(0, 1fr); }
+  .checkboxGroup { grid-template-columns: minmax(0, 1fr); }
   .authCard { padding: 26px; }
 }

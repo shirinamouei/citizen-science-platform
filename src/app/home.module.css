@@ -1,6 +1,6 @@
 .hero { padding: 72px 0 40px; }
 .heroHighlight { color: var(--orange); }
-.heroGrid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 56px; align-items: center; }
+.heroGrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
 .heroStats { display: flex; gap: 36px; margin-top: 44px; }
 .heroStats div strong { display: block; font-size: 26px; color: var(--navy); font-weight: 800; }
 .heroStats div span { font-size: 13px; color: var(--text-muted); }
@@ -22,7 +22,9 @@
 
 /* Step 1: journal entry */
 .journalCard {
-  width: 380px;
+  width: 100%;
+  max-width: 380px;
+  overflow: hidden;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -60,7 +62,8 @@
 
 /* Step 2: securely uploaded */
 .journalCardMini {
-  width: 340px;
+  width: 100%;
+  max-width: 340px;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -78,7 +81,7 @@
   100% { transform: scale(1); }
 }
 .progressTrack {
-  width: 240px; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
+  width: 100%; max-width: 240px; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
 }
 .progressFill {
   height: 100%; width: 0%; border-radius: 999px;
@@ -113,7 +116,7 @@
 .anonLabel { font-size: 14px; font-weight: 600; color: var(--navy); }
 
 /* Step 4: joins the dataset */
-.datasetList { display: flex; flex-direction: column; gap: 10px; width: 320px; }
+.datasetList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
 .datasetRow {
   display: flex; align-items: center; gap: 10px;
   background: var(--white); border: 1px solid var(--border); border-radius: 12px;
@@ -186,7 +189,7 @@
   .datasetRowNew, .datasetRowOld { opacity: 1; transform: translateY(0); }
 }
 
-.stepsStrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.stepsStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
 .stepCard { padding: 26px; }
 .stepNum {
   width: 30px; height: 30px; border-radius: 9px;
@@ -197,7 +200,7 @@
 
 /* ---------- Log in / continue as guest ---------- */
 .accessGrid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px;
   max-width: 760px; margin: 0 auto;
 }
 .accessCard { padding: 32px; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -246,13 +249,16 @@
 }
 
 @media (max-width: 860px) {
-  .heroGrid { grid-template-columns: 1fr; }
+  .heroGrid { grid-template-columns: minmax(0, 1fr); }
   .walkthroughStage { height: 360px; }
-  .journalCard, .journalCardMini, .datasetList { width: 100%; max-width: 340px; }
   .walkthroughCaption { height: 100px; }
-  .stepsStrip { grid-template-columns: 1fr 1fr; }
-  .accessGrid { grid-template-columns: 1fr; }
+  .stepsStrip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .accessGrid { grid-template-columns: minmax(0, 1fr); }
   .qrSection { flex-direction: column; text-align: center; }
   .qrText { max-width: 100%; }
-  .heroStats { flex-wrap: wrap; row-gap: 18px; }
+  .heroStats { flex-wrap: wrap; row-gap: 18px; justify-content: center; text-align: center; }
+}
+
+@media (max-width: 640px) {
+  .stepsStrip { grid-template-columns: minmax(0, 1fr); }
 }

@@ -11,7 +11,7 @@
 
 .valueGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   margin-top: 48px;
 }
@@ -25,7 +25,7 @@
 
 .storyGrid {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 48px;
   align-items: start;
   margin-top: 64px;
@@ -56,8 +56,8 @@
 .teamNoteIcon svg { width: 16px; height: 16px; }
 
 @media (max-width: 860px) {
-  .valueGrid { grid-template-columns: 1fr; }
-  .storyGrid { grid-template-columns: 1fr; gap: 16px; }
+  .valueGrid { grid-template-columns: minmax(0, 1fr); }
+  .storyGrid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .missionBand { padding: 40px 0; }
   .teamNote { flex-direction: column; }
 }
