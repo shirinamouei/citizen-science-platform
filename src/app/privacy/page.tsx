@@ -13,8 +13,9 @@ export default function PrivacyPage() {
           <div className="eyebrow">Transparency, plainly stated</div>
           <h1 style={{ fontSize: "38px" }}>How we handle your data</h1>
           <p className="lede mt-16">
-            No legal jargon that hides what actually happens. Here&apos;s exactly what we
-            collect, why, and the controls you have over it.
+            Your tapering data is used to help with academic research on tapering psychiatric medications. 
+            No sensitive information is attached, all contributions are completely anonymous, and your data
+            is never sold to third parties.
           </p>
         </div>
       </section>
