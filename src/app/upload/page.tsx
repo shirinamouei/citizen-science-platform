@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { addUpload, saveDraft } from "@/lib/upload-store";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
+import { useAuth } from "@/lib/auth-context";
 import styles from "./upload.module.css";
 
 function formatToday() {
@@ -132,6 +133,7 @@ function MedicationEntryFields({
 }
 
 export default function UploadPage() {
+  const { isSignedIn } = useAuth();
   const idBase = useId();
   const medicationCounter = useRef(0);
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
@@ -285,9 +287,11 @@ export default function UploadPage() {
               <button type="submit" className="btn btn-primary" disabled={underage}>
                 Submit data
               </button>
-              <button type="button" className="btn btn-secondary" onClick={handleSaveDraft}>
-                Save as draft
-              </button>
+              {isSignedIn && (
+                <button type="button" className="btn btn-secondary" onClick={handleSaveDraft}>
+                  Save as draft
+                </button>
+              )}
             </div>
             {submitted && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#1a7f4a", fontSize: "14px", fontWeight: 600 }}>
