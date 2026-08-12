@@ -9,7 +9,7 @@ const values = [
   {
     background: "var(--lavender)",
     title: "Consent first",
-    description: "Every contribution is opt-in. Nothing is required to use the app.",
+    description: "Every contribution is opt-in. Nothing is required to donate data.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none">
         <path
@@ -62,7 +62,7 @@ export default function AboutPage() {
       <section className={styles.missionBand}>
         <div className="wrap">
           <h2>
-            Donate your tapering data anonymously to help the next person taper with more
+            Donate your tapering data to support research and future patients taper with more
             confidence. With an account, bring together your diary entries, PDFs,
             spreadsheets, and AI chat logs into one place first.
           </h2>
@@ -87,13 +87,12 @@ export default function AboutPage() {
           </div>
 
           <div className={styles.storyGrid}>
-            <h2>Built after watching taper data go nowhere</h2>
+            <h2>Built after watching patients taper without guidance or support.</h2>
             <p className="lede">
-              Tapering is often a solitary process, and the record of it ends up scattered
-              across notes apps, spreadsheets, AI assistants, and notebooks that rarely
-              talk to each other. Cascade lets you donate that record anonymously so the
-              next person can taper with more confidence. Create an account first if you
-              want to bring it all together into one clear picture before you do.
+              Cascade was built in the pursuit of consolidating tapering data across 
+              various groups of people for various medications and conditions. This data, whether it be from journals, 
+              notes apps, or spreadsheets, will support academic research to make tapering psychiatric medication less 
+              uncertain and help future patients feel supported.
             </p>
           </div>
 
