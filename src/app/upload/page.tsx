@@ -2,14 +2,10 @@
 
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
-import { addUpload, saveDraft } from "@/lib/upload-store";
+import { addUpload, saveDraft, type CollectedEntry } from "@/lib/upload-store";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import { useAuth } from "@/lib/auth-context";
 import styles from "./upload.module.css";
-
-function formatToday() {
-  return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 const checkIcon = (
   <svg viewBox="0 0 24 24" fill="none">
@@ -139,6 +135,8 @@ export default function UploadPage() {
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [dob, setDob] = useState("");
   const underage = isMinor(dob);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -153,36 +151,34 @@ export default function UploadPage() {
     setMedicationIds((prev) => prev.filter((m) => m !== id));
   }
 
-  function collectEntry() {
+  function collectEntry(): CollectedEntry {
     const data = new FormData(formRef.current ?? undefined);
-    const meds = medicationIds
+    const medications = medicationIds
       .map((id) => {
         const selected = ((data.get(`med-name-${id}`) as string) || "").trim();
         const custom = ((data.get(`med-name-other-${id}`) as string) || "").trim();
-        return selected === "Other" ? custom : selected;
+        const name = selected === "Other" ? custom : selected;
+        const startingDose = ((data.get(`med-dose-${id}`) as string) || "").trim();
+        const currentDose = ((data.get(`med-dose-current-${id}`) as string) || "").trim();
+        return name ? { name, startingDose, currentDose } : null;
       })
-      .filter(Boolean);
-    const doseSummaries = medicationIds
-      .map((id) => {
-        const starting = (data.get(`med-dose-${id}`) as string)?.trim();
-        const current = (data.get(`med-dose-current-${id}`) as string)?.trim();
-        if (starting && current) return `${starting}mg → ${current}mg`;
-        return starting || current ? `${starting || current}mg` : "";
-      })
-      .filter(Boolean);
+      .filter((m): m is NonNullable<typeof m> => m !== null);
     const notes = ((data.get("notes") as string) || "").trim();
-    return {
-      date: formatToday(),
-      med: meds.length ? meds.join(", ") : "Untitled entry",
-      dose: doseSummaries.length ? doseSummaries.join(", ") : "—",
-      notes: notes || "N/A",
-    };
+    return { medications, notes };
   }
 
-  function handleSaveDraft() {
-    saveDraft(collectEntry());
-    setDraftSaved(true);
-    setSubmitted(false);
+  async function handleSaveDraft() {
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      await saveDraft(collectEntry());
+      setDraftSaved(true);
+      setSubmitted(false);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Couldn't save draft. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -203,12 +199,20 @@ export default function UploadPage() {
           <form
             ref={formRef}
             className={`card ${styles.formCard}`}
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (underage) return;
-              addUpload({ ...collectEntry(), status: "synced" });
-              setSubmitted(true);
-              setDraftSaved(false);
+              setSubmitError(null);
+              setSubmitting(true);
+              try {
+                await addUpload(collectEntry());
+                setSubmitted(true);
+                setDraftSaved(false);
+              } catch (err) {
+                setSubmitError(err instanceof Error ? err.message : "Couldn't submit your entry. Please try again.");
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
             <label style={{ display: "block", fontSize: "13.5px", fontWeight: 600, color: "var(--navy)", marginBottom: "6px" }}>
@@ -284,15 +288,20 @@ export default function UploadPage() {
             </div>
 
             <div className={`${styles.submitRow} mt-24`}>
-              <button type="submit" className="btn btn-primary" disabled={underage}>
-                Submit data
+              <button type="submit" className="btn btn-primary" disabled={underage || submitting}>
+                {submitting ? "Submitting…" : "Submit data"}
               </button>
               {isSignedIn && (
-                <button type="button" className="btn btn-secondary" onClick={handleSaveDraft}>
+                <button type="button" className="btn btn-secondary" onClick={handleSaveDraft} disabled={submitting}>
                   Save as draft
                 </button>
               )}
             </div>
+            {submitError && (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b3261e", fontSize: "14px", fontWeight: 600 }}>
+                {submitError}
+              </div>
+            )}
             {submitted && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#1a7f4a", fontSize: "14px", fontWeight: 600 }}>
                 ✓ Thanks. Your entry has been added to your upload history.

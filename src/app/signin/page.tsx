@@ -321,7 +321,7 @@ function MedicationAutocomplete() {
 
 export default function SignInPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signInWithPassword, signUp } = useAuth();
   const [tab, setTab] = useState<"signin" | "create">("signin");
 
   const [step, setStep] = useState(0);
@@ -331,6 +331,12 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [dob, setDob] = useState("");
   const underage = isMinor(dob);
+
+  const [signInSubmitting, setSignInSubmitting] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [createSubmitting, setCreateSubmitting] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [confirmEmailSent, setConfirmEmailSent] = useState(false);
 
   const [touched, setTouched] = useState({
     email: false,
@@ -382,18 +388,46 @@ export default function SignInPage() {
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const email = new FormData(e.currentTarget).get("email");
-    signIn(String(email));
-    router.push("/profile");
+    const data = new FormData(e.currentTarget);
+    const signInEmail = String(data.get("email") ?? "");
+    const signInPassword = String(data.get("password") ?? "");
+
+    setSignInError(null);
+    setSignInSubmitting(true);
+    try {
+      const { error } = await signInWithPassword(signInEmail, signInPassword);
+      if (error) {
+        setSignInError(error);
+        return;
+      }
+      router.push("/profile");
+    } finally {
+      setSignInSubmitting(false);
+    }
   }
 
-  function handleCreateAccountSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCreateAccountSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (underage) return;
-    signIn(email);
-    router.push("/profile");
+
+    setCreateError(null);
+    setCreateSubmitting(true);
+    try {
+      const { error, needsEmailConfirmation } = await signUp(email, password, preferredName);
+      if (error) {
+        setCreateError(error);
+        return;
+      }
+      if (needsEmailConfirmation) {
+        setConfirmEmailSent(true);
+        return;
+      }
+      router.push("/profile");
+    } finally {
+      setCreateSubmitting(false);
+    }
   }
 
   function handleFormKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
@@ -448,13 +482,19 @@ export default function SignInPage() {
                 </div>
                 <div className={styles.field}>
                   <label>Password</label>
-                  <input type="password" placeholder="••••••••" required />
+                  <input type="password" name="password" placeholder="••••••••" required />
                 </div>
                 <a href="#" className={styles.forgotLink}>
                   Forgot password?
                 </a>
-                <button type="submit" className="btn btn-primary" style={{ width: "100%" }}>
-                  Sign In
+                {signInError && <p className={styles.errorText}>{signInError}</p>}
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: "100%" }}
+                  disabled={signInSubmitting}
+                >
+                  {signInSubmitting ? "Signing in…" : "Sign In"}
                 </button>
               </form>
 
@@ -495,6 +535,12 @@ export default function SignInPage() {
 
               <ProgressBar step={step} total={TOTAL_STEPS} />
 
+              {confirmEmailSent ? (
+                <div className={styles.infoNote}>
+                  Almost there — check <strong>{email}</strong> for a confirmation link, then come
+                  back and sign in.
+                </div>
+              ) : (
               <form onSubmit={handleCreateAccountSubmit} onKeyDown={handleFormKeyDown}>
                 <div style={{ display: step === 0 ? "block" : "none" }}>
                   <div className={styles.stepHeading}>
@@ -858,13 +904,15 @@ export default function SignInPage() {
                     <button
                       type="submit"
                       className={`btn btn-primary ${styles.wizardNavNext}`}
-                      disabled={underage}
+                      disabled={underage || createSubmitting}
                     >
-                      Create Account
+                      {createSubmitting ? "Creating…" : "Create Account"}
                     </button>
                   )}
                 </div>
+                {createError && <p className={styles.errorText}>{createError}</p>}
               </form>
+              )}
 
               <div className={styles.authFooterLink}>
                 Already have an account?{" "}

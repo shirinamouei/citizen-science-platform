@@ -1,20 +1,19 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { isSignedInNow, subscribeAuthChange } from "@/lib/auth-context";
+import { useEffect, useSyncExternalStore } from "react";
+import { supabase } from "./supabase";
+import { useAuth } from "./auth-context";
 
-/* Client-only mock storage for the prototype: no backend yet, so drafts and
-   uploads live in localStorage when the user is signed in. Guest submissions
-   are kept in memory only -- never written to localStorage -- so they don't
-   survive a reload once the person walks away without an account. */
+/* Signed-in drafts/entries are read from and written to Supabase (RLS scopes
+   every row to auth.uid()). Guest submissions are anonymous inserts into
+   `entries` — write-only by policy, so there's nothing to read back. We keep
+   a local, in-memory list of what a guest submitted this session purely so
+   the page can show it to them before they navigate away; it's never
+   persisted and resets on reload. */
 
-export type DraftEntry = {
-  id: string;
-  date: string;
-  med: string;
-  dose: string;
-  notes: string;
-};
+export type MedicationRecord = { name: string; startingDose?: string; currentDose?: string };
+
+export type DraftEntry = { id: string; date: string; med: string; dose: string; notes: string };
 
 export type UploadEntry = {
   id: string;
@@ -25,123 +24,194 @@ export type UploadEntry = {
   status: "synced" | "pending";
 };
 
-const DRAFTS_KEY = "tt_drafts";
-const UPLOADS_KEY = "tt_uploads";
+export type CollectedEntry = { medications: MedicationRecord[]; notes: string };
+
 const EMPTY_DRAFTS: DraftEntry[] = [];
 const EMPTY_UPLOADS: UploadEntry[] = [];
 
-// Cached snapshots so useSyncExternalStore gets a stable reference until data
-// actually changes (it re-parses localStorage on every write, not every read).
-let draftsCache: DraftEntry[] | null = null;
-let uploadsCache: UploadEntry[] | null = null;
-
-// Guest (unauthenticated) data lives only here -- a plain module variable
-// resets naturally on reload, so it's never remembered across page loads.
-let guestDrafts: DraftEntry[] = [];
+let draftsCache: DraftEntry[] = [];
+let uploadsCache: UploadEntry[] = [];
 let guestUploads: UploadEntry[] = [];
 
 const listeners = new Set<() => void>();
-
 function notify() {
   listeners.forEach((listener) => listener());
 }
-
 function subscribe(callback: () => void) {
   listeners.add(callback);
   return () => listeners.delete(callback);
 }
 
-// When sign-in state changes, drop the persisted caches so the next read
-// re-hydrates from localStorage (or, for a fresh guest, sees nothing).
-subscribeAuthChange(() => {
-  draftsCache = null;
-  uploadsCache = null;
-  notify();
-});
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
-function readPersisted<T>(key: string): T[] {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T[]) : [];
-  } catch {
-    return [];
+function summarizeMedications(meds: MedicationRecord[]) {
+  const names = meds.map((m) => m.name).filter(Boolean);
+  const doses = meds
+    .map((m) => {
+      if (m.startingDose && m.currentDose) return `${m.startingDose}mg → ${m.currentDose}mg`;
+      const only = m.startingDose || m.currentDose;
+      return only ? `${only}mg` : "";
+    })
+    .filter(Boolean);
+  return {
+    med: names.length ? names.join(", ") : "Untitled entry",
+    dose: doses.length ? doses.join(", ") : "—",
+  };
+}
+
+// The DB rows only carry `medications`/`notes`; display fields are derived.
+type EntryRow = { id: string; created_at: string; medications: MedicationRecord[]; notes: string | null; status: "synced" | "pending" };
+type DraftRow = { id: string; updated_at: string; medications: MedicationRecord[]; notes: string | null };
+
+function rowToUpload(row: EntryRow): UploadEntry {
+  const { med, dose } = summarizeMedications(row.medications ?? []);
+  return { id: row.id, date: formatDate(row.created_at), med, dose, notes: row.notes || "N/A", status: row.status };
+}
+
+function rowToDraft(row: DraftRow): DraftEntry {
+  const { med, dose } = summarizeMedications(row.medications ?? []);
+  return { id: row.id, date: formatDate(row.updated_at), med, dose, notes: row.notes || "N/A" };
+}
+
+async function refreshUploads() {
+  const { data, error } = await supabase
+    .from("entries")
+    .select("id, created_at, medications, notes, status")
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Failed to load uploads:", error.message);
+    return;
   }
-}
-
-function getDraftsSnapshot(): DraftEntry[] {
-  if (!isSignedInNow()) return guestDrafts;
-  if (draftsCache === null) draftsCache = readPersisted<DraftEntry>(DRAFTS_KEY);
-  return draftsCache;
-}
-
-function getUploadsSnapshot(): UploadEntry[] {
-  if (!isSignedInNow()) return guestUploads;
-  if (uploadsCache === null) uploadsCache = readPersisted<UploadEntry>(UPLOADS_KEY);
-  return uploadsCache;
-}
-
-function writeDrafts(value: DraftEntry[]) {
-  if (isSignedInNow()) {
-    draftsCache = value;
-    localStorage.setItem(DRAFTS_KEY, JSON.stringify(value));
-  } else {
-    guestDrafts = value;
-  }
+  uploadsCache = (data ?? []).map(rowToUpload);
   notify();
 }
 
-function writeUploads(value: UploadEntry[]) {
-  if (isSignedInNow()) {
-    uploadsCache = value;
-    localStorage.setItem(UPLOADS_KEY, JSON.stringify(value));
-  } else {
-    guestUploads = value;
+async function refreshDrafts() {
+  const { data, error } = await supabase
+    .from("drafts")
+    .select("id, updated_at, medications, notes")
+    .order("updated_at", { ascending: false });
+  if (error) {
+    console.error("Failed to load drafts:", error.message);
+    return;
   }
+  draftsCache = (data ?? []).map(rowToDraft);
   notify();
+}
+
+/** Re-fetches from Supabase when sign-in state changes; clears local caches on sign-out. */
+export function useUploads() {
+  const { isSignedIn } = useAuth();
+  useEffect(() => {
+    if (isSignedIn) refreshUploads();
+    else {
+      uploadsCache = [];
+      notify();
+    }
+  }, [isSignedIn]);
+  return useSyncExternalStore(subscribe, () => (isSignedIn ? uploadsCache : guestUploads), () => EMPTY_UPLOADS);
 }
 
 export function useDrafts() {
-  return useSyncExternalStore(subscribe, getDraftsSnapshot, () => EMPTY_DRAFTS);
+  const { isSignedIn } = useAuth();
+  useEffect(() => {
+    if (isSignedIn) refreshDrafts();
+    else {
+      draftsCache = [];
+      notify();
+    }
+  }, [isSignedIn]);
+  return useSyncExternalStore(subscribe, () => (isSignedIn ? draftsCache : EMPTY_DRAFTS), () => EMPTY_DRAFTS);
 }
 
-export function useUploads() {
-  return useSyncExternalStore(subscribe, getUploadsSnapshot, () => EMPTY_UPLOADS);
-}
+export async function addUpload(entry: CollectedEntry) {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id ?? null;
 
-export function saveDraft(entry: Omit<DraftEntry, "id">) {
-  const draft: DraftEntry = { ...entry, id: crypto.randomUUID() };
-  writeDrafts([draft, ...getDraftsSnapshot()]);
-  return draft;
-}
+  const { data, error } = await supabase
+    .from("entries")
+    .insert({
+      user_id: userId,
+      medications: entry.medications,
+      notes: entry.notes || null,
+      status: "synced",
+      age_verified: true,
+    })
+    .select("id, created_at, medications, notes, status")
+    .single();
+  if (error) throw error;
 
-export function discardDraft(id: string) {
-  writeDrafts(getDraftsSnapshot().filter((draft) => draft.id !== id));
-}
-
-export function addUpload(entry: Omit<UploadEntry, "id">) {
-  const upload: UploadEntry = { ...entry, id: crypto.randomUUID() };
-  writeUploads([upload, ...getUploadsSnapshot()]);
+  const upload = rowToUpload(data);
+  if (userId) uploadsCache = [upload, ...uploadsCache];
+  else guestUploads = [upload, ...guestUploads];
+  notify();
   return upload;
 }
 
-export function deleteUpload(id: string) {
-  writeUploads(getUploadsSnapshot().filter((upload) => upload.id !== id));
+export async function saveDraft(entry: CollectedEntry) {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) throw new Error("You must be signed in to save a draft.");
+
+  const { data, error } = await supabase
+    .from("drafts")
+    .insert({ user_id: userId, medications: entry.medications, notes: entry.notes || null })
+    .select("id, updated_at, medications, notes")
+    .single();
+  if (error) throw error;
+
+  const draft = rowToDraft(data);
+  draftsCache = [draft, ...draftsCache];
+  notify();
+  return draft;
+}
+
+export async function discardDraft(id: string) {
+  const { error } = await supabase.from("drafts").delete().eq("id", id);
+  if (error) throw error;
+  draftsCache = draftsCache.filter((draft) => draft.id !== id);
+  notify();
+}
+
+export async function deleteUpload(id: string) {
+  const { error } = await supabase.from("entries").delete().eq("id", id);
+  if (error) throw error;
+  uploadsCache = uploadsCache.filter((upload) => upload.id !== id);
+  notify();
 }
 
 /** Moves a draft into the upload history and removes it from drafts. */
-export function promoteDraft(id: string) {
-  const draft = getDraftsSnapshot().find((d) => d.id === id);
-  if (!draft) return;
+export async function promoteDraft(id: string) {
+  const { data: draftRow, error: fetchError } = await supabase
+    .from("drafts")
+    .select("medications, notes")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw fetchError;
 
-  writeDrafts(getDraftsSnapshot().filter((d) => d.id !== id));
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) throw new Error("You must be signed in to promote a draft.");
 
-  const upload: UploadEntry = {
-    id: draft.id,
-    date: draft.date,
-    med: draft.med,
-    dose: draft.dose,
-    notes: draft.notes,
-    status: "synced",
-  };
-  writeUploads([upload, ...getUploadsSnapshot()]);
+  const { data: entryRow, error: insertError } = await supabase
+    .from("entries")
+    .insert({
+      user_id: userId,
+      medications: draftRow.medications,
+      notes: draftRow.notes,
+      status: "synced",
+      age_verified: true,
+    })
+    .select("id, created_at, medications, notes, status")
+    .single();
+  if (insertError) throw insertError;
+
+  const { error: deleteError } = await supabase.from("drafts").delete().eq("id", id);
+  if (deleteError) throw deleteError;
+
+  draftsCache = draftsCache.filter((draft) => draft.id !== id);
+  uploadsCache = [rowToUpload(entryRow), ...uploadsCache];
+  notify();
 }

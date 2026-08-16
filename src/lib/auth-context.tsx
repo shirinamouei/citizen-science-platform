@@ -1,61 +1,92 @@
 "use client";
 
-import { createContext, useContext, useSyncExternalStore } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 
-/* Client-only mock auth for the prototype: no backend yet, so "signing in"
-   just records a validated email locally. Swap this for real session/auth
-   calls once an auth provider is wired up. */
+type AuthResult = { error: string | null; needsEmailConfirmation?: boolean };
 
 type AuthContextValue = {
   isSignedIn: boolean;
+  loading: boolean;
   email: string | null;
-  signIn: (email: string) => void;
-  signOut: () => void;
+  signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, preferredName: string) => Promise<AuthResult>;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "tt_auth_email";
-const listeners = new Set<() => void>();
+async function ensureProfile(session: Session) {
+  const { user } = session;
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (existing) return;
 
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  return () => listeners.delete(callback);
-}
-
-function getSnapshot() {
-  return localStorage.getItem(STORAGE_KEY);
-}
-
-function getServerSnapshot() {
-  return null;
-}
-
-/** Plain (non-hook) read of sign-in state, for use outside React components. */
-export function isSignedInNow() {
-  return typeof window !== "undefined" && !!localStorage.getItem(STORAGE_KEY);
-}
-
-/** Subscribe to sign-in/out events from outside React, e.g. other client stores. */
-export function subscribeAuthChange(callback: () => void) {
-  return subscribe(callback);
-}
-
-function signIn(email: string) {
-  localStorage.setItem(STORAGE_KEY, email);
-  listeners.forEach((listener) => listener());
-}
-
-function signOut() {
-  localStorage.removeItem(STORAGE_KEY);
-  listeners.forEach((listener) => listener());
+  const { error } = await supabase.from("profiles").insert({
+    user_id: user.id,
+    preferred_name: (user.user_metadata?.preferred_name as string | undefined) ?? null,
+  });
+  if (error) console.error("Failed to create profile row:", error.message);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const email = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => subscription.subscription.unsubscribe();
+  }, []);
+
+  // A signed-in session (fresh sign-up with confirmation disabled, or a
+  // later sign-in after confirming by email) always gets a profile row —
+  // this is idempotent so it's safe to run on every session change.
+  useEffect(() => {
+    if (session) ensureProfile(session);
+  }, [session]);
+
+  async function signInWithPassword(email: string, password: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  }
+
+  async function signUp(email: string, password: string, preferredName: string): Promise<AuthResult> {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { preferred_name: preferredName } },
+    });
+    if (error) return { error: error.message };
+    return { error: null, needsEmailConfirmation: !data.session };
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+  }
 
   return (
-    <AuthContext.Provider value={{ isSignedIn: !!email, email, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        isSignedIn: !!session,
+        loading,
+        email: session?.user.email ?? null,
+        signInWithPassword,
+        signUp,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

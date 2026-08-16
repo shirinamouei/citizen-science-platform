@@ -135,7 +135,7 @@ create policy "attachments_delete_own" on storage.objects
 ```
 
 #### Secrets management
-- Only the Project URL and `anon` key are ever used client-side, as `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` — both are expected to be visible in the shipped JS bundle.
+- Only the Project URL and `publishable` key are ever used client-side, as `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — both are expected to be visible in the shipped JS bundle.
 - The `service_role` key is never used by this app. If a future feature genuinely needs to bypass RLS (e.g. building the aggregate research export below), that logic belongs in a Supabase Edge Function, not in this repo or its GitHub Actions secrets, since GitHub Pages has no server to keep it off the client.
 - The existing keep-alive cron ([keep-alive/route.ts](src/app/api/cron/keep-alive/route.ts)) only uses the `anon` key already, so it carries over to a GitHub Actions scheduled workflow without any secret-handling change.
 

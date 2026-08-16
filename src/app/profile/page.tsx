@@ -164,8 +164,8 @@ export default function ProfilePage() {
                   type="button"
                   className="btn btn-secondary btn-sm"
                   style={{ marginLeft: "auto" }}
-                  onClick={() => {
-                    signOut();
+                  onClick={async () => {
+                    await signOut();
                     router.push("/");
                   }}
                 >
@@ -274,14 +274,22 @@ export default function ProfilePage() {
                               <button
                                 type="button"
                                 className={styles.draftUploadBtn}
-                                onClick={() => promoteDraft(draft.id)}
+                                onClick={() =>
+                                  promoteDraft(draft.id).catch((err) =>
+                                    window.alert(err instanceof Error ? err.message : "Couldn't upload this draft.")
+                                  )
+                                }
                               >
                                 Upload
                               </button>
                               <button
                                 type="button"
                                 className={styles.draftDiscardBtn}
-                                onClick={() => discardDraft(draft.id)}
+                                onClick={() =>
+                                  discardDraft(draft.id).catch((err) =>
+                                    window.alert(err instanceof Error ? err.message : "Couldn't discard this draft.")
+                                  )
+                                }
                               >
                                 Discard
                               </button>
@@ -336,7 +344,9 @@ export default function ProfilePage() {
                                     "Delete this entry? This removes it from the database and can't be undone."
                                   )
                                 ) {
-                                  deleteUpload(upload.id);
+                                  deleteUpload(upload.id).catch((err) =>
+                                    window.alert(err instanceof Error ? err.message : "Couldn't delete this entry.")
+                                  );
                                 }
                               }}
                             >
