@@ -484,9 +484,9 @@ export default function SignInPage() {
                   <label>Password</label>
                   <input type="password" name="password" placeholder="••••••••" required />
                 </div>
-                <a href="#" className={styles.forgotLink}>
+                <Link href="/forgot-password" className={styles.forgotLink}>
                   Forgot password?
-                </a>
+                </Link>
                 {signInError && <p className={styles.errorText}>{signInError}</p>}
                 <button
                   type="submit"
