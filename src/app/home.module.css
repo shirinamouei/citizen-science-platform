@@ -1,4 +1,4 @@
-.hero { padding: 72px 0 40px; }
+.hero { padding: 32px 0 40px; }
 .heroHighlight { color: var(--orange); }
 .heroGrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
 .heroStats { display: flex; gap: 36px; margin-top: 44px; }
@@ -36,22 +36,38 @@
   color: var(--text-muted); margin-bottom: 16px;
 }
 .journalBody { font-size: 16px; line-height: 2; color: var(--navy); }
-.typeLine {
+/* Text is always fully rendered — an opaque cover sits on top and shrinks
+   away via `transform`, which browsers composite on the GPU with no per-frame
+   layout/paint work. This is what makes the reveal reliably smooth: a
+   clip-path (or width) animation still has to re-rasterize on many browsers,
+   which is exactly what showed up as a hesitate-then-snap stutter. `width:
+   fit-content` keeps the wrapper (and therefore the cover) sized to the
+   text's actual rendered width, not the card's full width, so the reveal
+   timing matches the text instead of racing through trailing empty space. */
+.typeLineWrap {
+  position: relative;
   display: block;
+  width: fit-content;
   white-space: nowrap;
-  clip-path: inset(0 100% 0 0);
-  animation-timing-function: steps(40, jump-end);
+}
+.typeLineCover {
+  position: absolute;
+  inset: 0;
+  background: var(--white);
+  transform-origin: right center;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
+  animation-timing-function: linear;
+  pointer-events: none;
 }
-.typeDate { animation-name: typeReveal; animation-duration: 0.35s; animation-timing-function: steps(11, jump-end); }
-.typeLine1 { animation-name: typeReveal; animation-duration: 0.7s; animation-timing-function: steps(36, jump-end); animation-delay: 0.4s; }
-.typeLine2 { animation-name: typeReveal; animation-duration: 0.75s; animation-timing-function: steps(40, jump-end); animation-delay: 1.15s; }
-.typeLine3 { animation-name: typeReveal; animation-duration: 0.7s; animation-timing-function: steps(39, jump-end); animation-delay: 1.95s; }
-@keyframes typeReveal {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0% 0 0); }
+@keyframes wipeReveal {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
+.typeDateCover { animation-name: wipeReveal; animation-duration: 0.22s; }
+.typeLine1Cover { animation-name: wipeReveal; animation-duration: 0.45s; animation-delay: 0.28s; }
+.typeLine2Cover { animation-name: wipeReveal; animation-duration: 0.48s; animation-delay: 0.8s; }
+.typeLine3Cover { animation-name: wipeReveal; animation-duration: 0.45s; animation-delay: 1.35s; }
 .cursor {
   display: inline-block; width: 2px; height: 1em;
   background: var(--orange); margin-left: 2px; vertical-align: middle;
@@ -74,7 +90,7 @@
   font-size: 13.5px; color: var(--text-muted); margin-top: 6px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.mockUploadBtn { animation: btnPress 0.4s ease 0.6s 1 both; cursor: default; }
+.mockUploadBtn { animation: btnPress 0.35s ease 0.45s 1 both; cursor: default; }
 @keyframes btnPress {
   0% { transform: scale(1); }
   50% { transform: scale(0.93); }
@@ -86,7 +102,7 @@
 .progressFill {
   height: 100%; width: 0%; border-radius: 999px;
   background: linear-gradient(90deg, var(--orange), var(--gold));
-  animation: progressFill 1.8s ease 1s 1 forwards;
+  animation: progressFill 1.4s ease 0.6s 1 forwards;
 }
 @keyframes progressFill {
   from { width: 0%; }
@@ -125,9 +141,9 @@
 .datasetRowNew {
   color: var(--navy); font-weight: 700; border-color: var(--orange);
   box-shadow: 0 6px 18px rgba(255,149,0,0.15);
-  animation: rowInsert 0.5s ease 0.9s 1 both;
+  animation: rowInsert 0.5s ease 0.5s 1 both;
 }
-.datasetRowOld { animation: rowShiftDown 0.5s ease 0.9s 1 both; }
+.datasetRowOld { animation: rowShiftDown 0.5s ease 0.5s 1 both; }
 @keyframes rowInsert {
   from { opacity: 0; transform: translateY(-55px); }
   to { opacity: 1; transform: translateY(0); }
@@ -180,10 +196,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .phase, .captionItem { transition: none; }
-  .typeLine, .mockUploadBtn, .progressFill, .checkBadge, .datasetRowNew, .datasetRowOld {
+  .typeLineCover, .mockUploadBtn, .progressFill, .checkBadge, .datasetRowNew, .datasetRowOld {
     animation: none !important;
   }
-  .typeDate, .typeLine1, .typeLine2, .typeLine3 { clip-path: inset(0 0% 0 0); }
+  .typeLineCover { transform: scaleX(0); }
   .progressFill { width: 100%; }
   .checkBadge { transform: scale(1); opacity: 1; }
   .datasetRowNew, .datasetRowOld { opacity: 1; transform: translateY(0); }

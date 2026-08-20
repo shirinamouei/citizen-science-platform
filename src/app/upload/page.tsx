@@ -6,6 +6,7 @@ import { addUpload, type CollectedEntry } from "@/lib/upload-store";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import { validateAttachment } from "@/lib/file-validation";
 import { MedicationAutocomplete } from "@/components/MedicationAutocomplete";
+import { Turnstile } from "@/components/Turnstile";
 import styles from "./upload.module.css";
 
 const checkIcon = (
@@ -106,6 +107,7 @@ export default function UploadPage() {
   const [attachment, setAttachment] = useState<{ file: File; extension: string } | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [validatingFile, setValidatingFile] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   async function handleFileSelected(selected: File | null) {
     setFileError(null);
@@ -168,10 +170,14 @@ export default function UploadPage() {
             onSubmit={async (e) => {
               e.preventDefault();
               if (underage) return;
+              if (!turnstileToken) {
+                setSubmitError("Please complete the verification check below.");
+                return;
+              }
               setSubmitError(null);
               setSubmitting(true);
               try {
-                await addUpload(collectEntry(), attachment);
+                await addUpload(collectEntry(), attachment, turnstileToken);
                 setSubmitted(true);
               } catch (err) {
                 setSubmitError(err instanceof Error ? err.message : "Couldn't submit your entry. Please try again.");
@@ -280,8 +286,16 @@ export default function UploadPage() {
               </span>
             </div>
 
+            <div className="mt-24">
+              <Turnstile onVerify={setTurnstileToken} />
+            </div>
+
             <div className={`${styles.submitRow} mt-24`}>
-              <button type="submit" className="btn btn-primary" disabled={underage || submitting || validatingFile}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={underage || submitting || validatingFile || !turnstileToken}
+              >
                 {submitting ? "Submitting…" : "Submit data"}
               </button>
             </div>

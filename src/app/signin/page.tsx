@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import { MedicationAutocomplete } from "@/components/MedicationAutocomplete";
+import { Turnstile } from "@/components/Turnstile";
 import styles from "./signin.module.css";
 
 const TOTAL_STEPS = 6;
@@ -264,8 +265,10 @@ export default function SignInPage() {
 
   const [signInSubmitting, setSignInSubmitting] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
+  const [signInTurnstileToken, setSignInTurnstileToken] = useState<string | null>(null);
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [createTurnstileToken, setCreateTurnstileToken] = useState<string | null>(null);
   const [confirmEmailSent, setConfirmEmailSent] = useState(false);
 
   const [touched, setTouched] = useState({
@@ -324,10 +327,14 @@ export default function SignInPage() {
     const signInEmail = String(data.get("email") ?? "");
     const signInPassword = String(data.get("password") ?? "");
 
+    if (!signInTurnstileToken) {
+      setSignInError("Please complete the verification check below.");
+      return;
+    }
     setSignInError(null);
     setSignInSubmitting(true);
     try {
-      const { error } = await signInWithPassword(signInEmail, signInPassword);
+      const { error } = await signInWithPassword(signInEmail, signInPassword, signInTurnstileToken);
       if (error) {
         setSignInError(error);
         return;
@@ -341,11 +348,15 @@ export default function SignInPage() {
   async function handleCreateAccountSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (underage) return;
+    if (!createTurnstileToken) {
+      setCreateError("Please complete the verification check below.");
+      return;
+    }
 
     setCreateError(null);
     setCreateSubmitting(true);
     try {
-      const { error, needsEmailConfirmation } = await signUp(email, password, preferredName);
+      const { error, needsEmailConfirmation } = await signUp(email, password, preferredName, createTurnstileToken);
       if (error) {
         setCreateError(error);
         return;
@@ -417,12 +428,15 @@ export default function SignInPage() {
                 <Link href="/forgot-password" className={styles.forgotLink}>
                   Forgot password?
                 </Link>
+                <div className="mt-16">
+                  <Turnstile onVerify={setSignInTurnstileToken} />
+                </div>
                 {signInError && <p className={styles.errorText}>{signInError}</p>}
                 <button
                   type="submit"
                   className="btn btn-primary"
                   style={{ width: "100%" }}
-                  disabled={signInSubmitting}
+                  disabled={signInSubmitting || !signInTurnstileToken}
                 >
                   {signInSubmitting ? "Signing in…" : "Sign In"}
                 </button>
@@ -811,6 +825,10 @@ export default function SignInPage() {
                       .
                     </span>
                   </div>
+
+                  <div className="mt-16">
+                    <Turnstile onVerify={setCreateTurnstileToken} />
+                  </div>
                 </div>
 
                 <div className={styles.wizardNav}>
@@ -834,7 +852,7 @@ export default function SignInPage() {
                     <button
                       type="submit"
                       className={`btn btn-primary ${styles.wizardNavNext}`}
-                      disabled={underage || createSubmitting}
+                      disabled={underage || createSubmitting || !createTurnstileToken}
                     >
                       {createSubmitting ? "Creating…" : "Create Account"}
                     </button>

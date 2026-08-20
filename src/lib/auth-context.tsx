@@ -10,8 +10,8 @@ type AuthContextValue = {
   isSignedIn: boolean;
   loading: boolean;
   email: string | null;
-  signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string, preferredName: string) => Promise<AuthResult>;
+  signInWithPassword: (email: string, password: string, captchaToken: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, preferredName: string, captchaToken: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 };
 
@@ -55,16 +55,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  async function signInWithPassword(email: string, password: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  async function signInWithPassword(email: string, password: string, captchaToken: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
     return { error: error?.message ?? null };
   }
 
-  async function signUp(email: string, password: string, preferredName: string): Promise<AuthResult> {
+  async function signUp(
+    email: string,
+    password: string,
+    preferredName: string,
+    captchaToken: string
+  ): Promise<AuthResult> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { preferred_name: preferredName } },
+      options: { data: { preferred_name: preferredName }, captchaToken },
     });
     if (error) return { error: error.message };
     return { error: null, needsEmailConfirmation: !data.session };

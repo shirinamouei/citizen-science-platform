@@ -5,11 +5,12 @@ import { supabase } from "./supabase";
 import { useAuth } from "./auth-context";
 
 /* Signed-in entries are read from and written to Supabase (RLS scopes every
-   row to auth.uid()). Guest submissions are anonymous inserts into `entries`
-   — write-only by policy, so there's nothing to read back. We keep a local,
-   in-memory list of what a guest submitted this session purely so the page
-   can show it to them before they navigate away; it's never persisted and
-   resets on reload. */
+   row to auth.uid()); creation goes through the submit-entry Edge Function
+   for everyone (see addUpload). Guests can't query `entries` back at all, so
+   we keep a local, in-memory list of what a guest submitted this session —
+   built from the Edge Function's response — purely so the page can show it
+   to them before they navigate away; it's never persisted and resets on
+   reload. */
 
 export type MedicationRecord = { name: string; startingDose?: string; currentDose?: string };
 
@@ -101,51 +102,44 @@ async function uploadAttachment(id: string, userId: string | null, file: File, e
   return path;
 }
 
-export async function addUpload(entry: CollectedEntry, attachment?: { file: File; extension: string } | null) {
+/** Reads the friendly message out of a submit-entry Edge Function error
+ * response, falling back to a generic one if the body can't be parsed. */
+async function extractFunctionErrorMessage(error: unknown): Promise<string> {
+  const context = (error as { context?: Response } | null)?.context;
+  if (context) {
+    try {
+      const body = await context.json();
+      if (typeof body?.error === "string") return body.error;
+    } catch {
+      // fall through
+    }
+  }
+  return "Couldn't submit your entry. Please try again.";
+}
+
+/** Creation always goes through the submit-entry Edge Function, which
+ * verifies the Turnstile token and enforces a rate limit before writing the
+ * row — direct table inserts are revoked at the database level so this is
+ * the only path in for both signed-in and guest submissions. */
+export async function addUpload(
+  entry: CollectedEntry,
+  attachment: { file: File; extension: string } | null | undefined,
+  turnstileToken: string
+) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
   const id = crypto.randomUUID();
 
   const attachmentPath = attachment ? await uploadAttachment(id, userId, attachment.file, attachment.extension) : null;
 
-  const payload = {
-    id,
-    user_id: userId,
-    medications: entry.medications,
-    notes: entry.notes || null,
-    status: "synced" as const,
-    age_verified: true,
-    attachment_path: attachmentPath,
-  };
+  const { data, error } = await supabase.functions.invoke("submit-entry", {
+    body: { id, medications: entry.medications, notes: entry.notes || null, attachmentPath, turnstileToken },
+  });
+  if (error) throw new Error(await extractFunctionErrorMessage(error));
 
-  // Guest rows are write-only under RLS (nobody can read another guest's
-  // anonymous submission back, including the submitter) — so there's no row
-  // to select after insert. Build the confirmation entry from what we
-  // already know instead of reading it back.
-  if (!userId) {
-    const { error } = await supabase.from("entries").insert(payload);
-    if (error) throw error;
-    const upload = rowToUpload({
-      id,
-      created_at: new Date().toISOString(),
-      medications: entry.medications,
-      notes: entry.notes || null,
-      status: "synced",
-    });
-    guestUploads = [upload, ...guestUploads];
-    notify();
-    return upload;
-  }
-
-  const { data, error } = await supabase
-    .from("entries")
-    .insert(payload)
-    .select("id, created_at, medications, notes, status")
-    .single();
-  if (error) throw error;
-
-  const upload = rowToUpload(data);
-  uploadsCache = [upload, ...uploadsCache];
+  const upload = rowToUpload(data.entry);
+  if (userId) uploadsCache = [upload, ...uploadsCache];
+  else guestUploads = [upload, ...guestUploads];
   notify();
   return upload;
 }

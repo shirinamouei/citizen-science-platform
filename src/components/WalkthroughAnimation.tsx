@@ -8,7 +8,7 @@ interface Step {
   description: string;
 }
 
-const PHASE_DURATION = 5000;
+const PHASE_DURATION = 3200;
 
 export default function WalkthroughAnimation({
   steps,
@@ -61,14 +61,24 @@ export default function WalkthroughAnimation({
         <div className={`${styles.phase} ${activeIndex === 0 ? styles.phaseActive : ""}`}>
           <div className={styles.journalCard} key={`journal-${playTokens[0]}`}>
             <div className={styles.journalDate}>
-              <span className={`${styles.typeLine} ${styles.typeDate}`}>{todayLabel}</span>
+              <span className={styles.typeLineWrap}>
+                {todayLabel}
+                <span className={`${styles.typeLineCover} ${styles.typeDateCover}`} />
+              </span>
             </div>
             <div className={styles.journalBody}>
-              <span className={`${styles.typeLine} ${styles.typeLine1}`}>Day 12 of taper — 37.5mg dose today.</span>
-              <span className={`${styles.typeLine} ${styles.typeLine2}`}>Mild dizziness this morning, better now.</span>
-              <span className={`${styles.typeLine} ${styles.typeLine3}`}>
+              <span className={styles.typeLineWrap}>
+                Day 12 of taper — 37.5mg dose today.
+                <span className={`${styles.typeLineCover} ${styles.typeLine1Cover}`} />
+              </span>
+              <span className={styles.typeLineWrap}>
+                Mild dizziness this morning, better now.
+                <span className={`${styles.typeLineCover} ${styles.typeLine2Cover}`} />
+              </span>
+              <span className={styles.typeLineWrap}>
                 Sleep and appetite both back to normal.
                 <span className={styles.cursor}></span>
+                <span className={`${styles.typeLineCover} ${styles.typeLine3Cover}`} />
               </span>
             </div>
           </div>
