@@ -83,16 +83,6 @@
   padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 13.5px;
 }
 
-.draftActions { display: flex; gap: 8px; }
-.draftUploadBtn, .draftDiscardBtn {
-  border: none; background: none; cursor: pointer;
-  font-size: 12.5px; font-weight: 600; padding: 4px 0;
-}
-.draftUploadBtn { color: var(--orange); }
-.draftUploadBtn:hover { text-decoration: underline; }
-.draftDiscardBtn { color: var(--text-muted); }
-.draftDiscardBtn:hover { color: var(--text); text-decoration: underline; }
-
 .deleteBtn {
   border: none; background: none; cursor: pointer;
   font-size: 12.5px; font-weight: 600; padding: 4px 0;

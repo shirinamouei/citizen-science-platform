@@ -53,24 +53,6 @@
 .field textarea { resize: vertical; min-height: 90px; }
 .fieldRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 .fieldRow3 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
-.otherInput {
-  width: 100%;
-  margin-top: 8px;
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  background: var(--white);
-  font-size: 14.5px;
-  font-family: inherit;
-  color: var(--text);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.otherInput:focus {
-  outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px rgba(152,189,224,0.28);
-}
-
 .medicationEntry {
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);

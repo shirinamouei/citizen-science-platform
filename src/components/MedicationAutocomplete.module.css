@@ -1,0 +1,54 @@
+.field { position: relative; margin-bottom: 20px; }
+.field label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.hint { font-size: 12.5px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+.field input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(152, 189, 224, 0.28);
+}
+
+.list {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.item {
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+.item:hover,
+.itemActive {
+  background: var(--lavender);
+  color: var(--navy);
+}

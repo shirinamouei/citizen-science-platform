@@ -41,21 +41,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
+      if (data.session) ensureProfile(data.session);
     });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    // Only SIGNED_IN needs a profile check (covers sign-up with confirmation
+    // disabled, and sign-in after confirming by email) — TOKEN_REFRESHED fires
+    // hourly for every active tab and would otherwise re-run this needlessly.
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
+      if (event === "SIGNED_IN" && newSession) ensureProfile(newSession);
     });
 
     return () => subscription.subscription.unsubscribe();
   }, []);
-
-  // A signed-in session (fresh sign-up with confirmation disabled, or a
-  // later sign-in after confirming by email) always gets a profile row —
-  // this is idempotent so it's safe to run on every session change.
-  useEffect(() => {
-    if (session) ensureProfile(session);
-  }, [session]);
 
   async function signInWithPassword(email: string, password: string): Promise<AuthResult> {
     const { error } = await supabase.auth.signInWithPassword({ email, password });

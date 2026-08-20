@@ -1,21 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-} from "chart.js";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
-import { deleteUpload, discardDraft, promoteDraft, useDrafts, useUploads, type UploadEntry } from "@/lib/upload-store";
+import { deleteUpload, useUploads, type UploadEntry } from "@/lib/upload-store";
 import styles from "./profile.module.css";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
+// chart.js is a heavy dependency (~200KB) only needed once uploads exist —
+// deferring it keeps it out of this page's initial JS parse/execute cost.
+const ContributionChart = dynamic(() => import("./ContributionChart"), { ssr: false });
 
 function buildContributionSeries(uploads: UploadEntry[]) {
   const chronological = [...uploads].reverse();
@@ -116,7 +109,6 @@ export default function ProfilePage() {
   const { isSignedIn, email, signOut } = useAuth();
   const isGuest = !isSignedIn;
   const router = useRouter();
-  const drafts = useDrafts();
   const uploads = useUploads();
   const stats = buildStats(uploads.length, uploads[0]?.date ?? "—");
   const milestones = buildMilestones(uploads.length);
@@ -187,36 +179,7 @@ export default function ProfilePage() {
                 </div>
                 {uploads.length > 0 ? (
                   <div className={styles.chartCanvas}>
-                    <Line
-                      data={{
-                        labels: contributionSeries.labels,
-                        datasets: [
-                          {
-                            label: "Total contributions",
-                            data: contributionSeries.data,
-                            borderColor: "#FF9500",
-                            backgroundColor: "rgba(255,149,0,0.12)",
-                            fill: true,
-                            tension: 0.35,
-                            pointRadius: 3,
-                            pointBackgroundColor: "#FF9500",
-                          },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                          x: { grid: { display: false }, ticks: { color: "#5b6b85", font: { size: 11 } } },
-                          y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0, color: "#5b6b85", font: { size: 11 } },
-                            grid: { color: "#e3e9f7" },
-                          },
-                        },
-                      }}
-                    />
+                    <ContributionChart labels={contributionSeries.labels} data={contributionSeries.data} />
                   </div>
                 ) : (
                   <div className={styles.chartEmpty}>
@@ -247,61 +210,6 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
-
-            {drafts.length > 0 && (
-              <div className={`card ${styles.historyCard}`}>
-                <h3 className="mb-16">Drafts</h3>
-                <div className={styles.tableScroll}>
-                  <table className={styles.history}>
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Medication</th>
-                        <th>Dose</th>
-                        <th>Notes</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {drafts.map((draft) => (
-                        <tr key={draft.id}>
-                          <td>{draft.date}</td>
-                          <td>{draft.med}</td>
-                          <td>{draft.dose}</td>
-                          <td>{draft.notes}</td>
-                          <td>
-                            <div className={styles.draftActions}>
-                              <button
-                                type="button"
-                                className={styles.draftUploadBtn}
-                                onClick={() =>
-                                  promoteDraft(draft.id).catch((err) =>
-                                    window.alert(err instanceof Error ? err.message : "Couldn't upload this draft.")
-                                  )
-                                }
-                              >
-                                Upload
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.draftDiscardBtn}
-                                onClick={() =>
-                                  discardDraft(draft.id).catch((err) =>
-                                    window.alert(err instanceof Error ? err.message : "Couldn't discard this draft.")
-                                  )
-                                }
-                              >
-                                Discard
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
 
             <div className={`card ${styles.historyCard}`}>
               <h3 className="mb-16">Upload history</h3>

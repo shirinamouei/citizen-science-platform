@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
-import { MEDICATIONS } from "@/lib/medications";
+import { MedicationAutocomplete } from "@/components/MedicationAutocomplete";
 import styles from "./signin.module.css";
 
 const TOTAL_STEPS = 6;
@@ -245,76 +245,6 @@ function PrescribedConditionQuestion() {
           <input type="text" className={styles.otherInput} placeholder="Please specify" />
         )}
       </div>
-    </div>
-  );
-}
-
-function MedicationAutocomplete() {
-  const [value, setValue] = useState("");
-  const [open, setOpen] = useState(false);
-  const [highlight, setHighlight] = useState(0);
-
-  const query = value.trim().toLowerCase();
-  const matches =
-    query === ""
-      ? []
-      : MEDICATIONS.filter((m) => m.toLowerCase().includes(query)).slice(0, 6);
-
-  function choose(option: string) {
-    setValue(option);
-    setOpen(false);
-  }
-
-  return (
-    <div className={styles.field} style={{ position: "relative" }}>
-      <label>
-        Medication <span className={styles.hint}>Start typing to see matches</span>
-      </label>
-      <input
-        type="text"
-        name="medication"
-        autoComplete="off"
-        placeholder="e.g., Sertraline (Zoloft)"
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value);
-          setOpen(true);
-          setHighlight(0);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 100)}
-        onKeyDown={(e) => {
-          if (!open || matches.length === 0) return;
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setHighlight((h) => Math.min(h + 1, matches.length - 1));
-          } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            setHighlight((h) => Math.max(h - 1, 0));
-          } else if (e.key === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            choose(matches[highlight]);
-          } else if (e.key === "Escape") {
-            setOpen(false);
-          }
-        }}
-      />
-      {open && matches.length > 0 && (
-        <ul className={styles.autocompleteList}>
-          {matches.map((option, i) => (
-            <li
-              key={option}
-              className={`${styles.autocompleteItem} ${
-                i === highlight ? styles.autocompleteItemActive : ""
-              }`}
-              onMouseDown={() => choose(option)}
-            >
-              {option}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
@@ -713,7 +643,7 @@ export default function SignInPage() {
                     <p>All fields in this section are optional.</p>
                   </div>
 
-                  <MedicationAutocomplete />
+                  <MedicationAutocomplete name="medication" placeholder="e.g., Sertraline (Zoloft)" />
 
                   <PrescribedConditionQuestion />
 

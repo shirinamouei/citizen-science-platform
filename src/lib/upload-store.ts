@@ -4,16 +4,14 @@ import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "./supabase";
 import { useAuth } from "./auth-context";
 
-/* Signed-in drafts/entries are read from and written to Supabase (RLS scopes
-   every row to auth.uid()). Guest submissions are anonymous inserts into
-   `entries` — write-only by policy, so there's nothing to read back. We keep
-   a local, in-memory list of what a guest submitted this session purely so
-   the page can show it to them before they navigate away; it's never
-   persisted and resets on reload. */
+/* Signed-in entries are read from and written to Supabase (RLS scopes every
+   row to auth.uid()). Guest submissions are anonymous inserts into `entries`
+   — write-only by policy, so there's nothing to read back. We keep a local,
+   in-memory list of what a guest submitted this session purely so the page
+   can show it to them before they navigate away; it's never persisted and
+   resets on reload. */
 
 export type MedicationRecord = { name: string; startingDose?: string; currentDose?: string };
-
-export type DraftEntry = { id: string; date: string; med: string; dose: string; notes: string };
 
 export type UploadEntry = {
   id: string;
@@ -26,10 +24,8 @@ export type UploadEntry = {
 
 export type CollectedEntry = { medications: MedicationRecord[]; notes: string };
 
-const EMPTY_DRAFTS: DraftEntry[] = [];
 const EMPTY_UPLOADS: UploadEntry[] = [];
 
-let draftsCache: DraftEntry[] = [];
 let uploadsCache: UploadEntry[] = [];
 let guestUploads: UploadEntry[] = [];
 
@@ -63,16 +59,10 @@ function summarizeMedications(meds: MedicationRecord[]) {
 
 // The DB rows only carry `medications`/`notes`; display fields are derived.
 type EntryRow = { id: string; created_at: string; medications: MedicationRecord[]; notes: string | null; status: "synced" | "pending" };
-type DraftRow = { id: string; updated_at: string; medications: MedicationRecord[]; notes: string | null };
 
 function rowToUpload(row: EntryRow): UploadEntry {
   const { med, dose } = summarizeMedications(row.medications ?? []);
   return { id: row.id, date: formatDate(row.created_at), med, dose, notes: row.notes || "N/A", status: row.status };
-}
-
-function rowToDraft(row: DraftRow): DraftEntry {
-  const { med, dose } = summarizeMedications(row.medications ?? []);
-  return { id: row.id, date: formatDate(row.updated_at), med, dose, notes: row.notes || "N/A" };
 }
 
 async function refreshUploads() {
@@ -85,19 +75,6 @@ async function refreshUploads() {
     return;
   }
   uploadsCache = (data ?? []).map(rowToUpload);
-  notify();
-}
-
-async function refreshDrafts() {
-  const { data, error } = await supabase
-    .from("drafts")
-    .select("id, updated_at, medications, notes")
-    .order("updated_at", { ascending: false });
-  if (error) {
-    console.error("Failed to load drafts:", error.message);
-    return;
-  }
-  draftsCache = (data ?? []).map(rowToDraft);
   notify();
 }
 
@@ -114,104 +91,68 @@ export function useUploads() {
   return useSyncExternalStore(subscribe, () => (isSignedIn ? uploadsCache : guestUploads), () => EMPTY_UPLOADS);
 }
 
-export function useDrafts() {
-  const { isSignedIn } = useAuth();
-  useEffect(() => {
-    if (isSignedIn) refreshDrafts();
-    else {
-      draftsCache = [];
-      notify();
-    }
-  }, [isSignedIn]);
-  return useSyncExternalStore(subscribe, () => (isSignedIn ? draftsCache : EMPTY_DRAFTS), () => EMPTY_DRAFTS);
+/** Uploads to the private `entry-attachments` bucket under a path scoped to
+ * the owning user (or `guest/` for anonymous submissions) and returns the
+ * storage path to store alongside the entry row. */
+async function uploadAttachment(id: string, userId: string | null, file: File, extension: string) {
+  const path = `${userId ?? "guest"}/${id}${extension}`;
+  const { error } = await supabase.storage.from("entry-attachments").upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return path;
 }
 
-export async function addUpload(entry: CollectedEntry) {
+export async function addUpload(entry: CollectedEntry, attachment?: { file: File; extension: string } | null) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
+  const id = crypto.randomUUID();
 
-  const { data, error } = await supabase
-    .from("entries")
-    .insert({
-      user_id: userId,
+  const attachmentPath = attachment ? await uploadAttachment(id, userId, attachment.file, attachment.extension) : null;
+
+  const payload = {
+    id,
+    user_id: userId,
+    medications: entry.medications,
+    notes: entry.notes || null,
+    status: "synced" as const,
+    age_verified: true,
+    attachment_path: attachmentPath,
+  };
+
+  // Guest rows are write-only under RLS (nobody can read another guest's
+  // anonymous submission back, including the submitter) — so there's no row
+  // to select after insert. Build the confirmation entry from what we
+  // already know instead of reading it back.
+  if (!userId) {
+    const { error } = await supabase.from("entries").insert(payload);
+    if (error) throw error;
+    const upload = rowToUpload({
+      id,
+      created_at: new Date().toISOString(),
       medications: entry.medications,
       notes: entry.notes || null,
       status: "synced",
-      age_verified: true,
-    })
+    });
+    guestUploads = [upload, ...guestUploads];
+    notify();
+    return upload;
+  }
+
+  const { data, error } = await supabase
+    .from("entries")
+    .insert(payload)
     .select("id, created_at, medications, notes, status")
     .single();
   if (error) throw error;
 
   const upload = rowToUpload(data);
-  if (userId) uploadsCache = [upload, ...uploadsCache];
-  else guestUploads = [upload, ...guestUploads];
+  uploadsCache = [upload, ...uploadsCache];
   notify();
   return upload;
-}
-
-export async function saveDraft(entry: CollectedEntry) {
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  if (!userId) throw new Error("You must be signed in to save a draft.");
-
-  const { data, error } = await supabase
-    .from("drafts")
-    .insert({ user_id: userId, medications: entry.medications, notes: entry.notes || null })
-    .select("id, updated_at, medications, notes")
-    .single();
-  if (error) throw error;
-
-  const draft = rowToDraft(data);
-  draftsCache = [draft, ...draftsCache];
-  notify();
-  return draft;
-}
-
-export async function discardDraft(id: string) {
-  const { error } = await supabase.from("drafts").delete().eq("id", id);
-  if (error) throw error;
-  draftsCache = draftsCache.filter((draft) => draft.id !== id);
-  notify();
 }
 
 export async function deleteUpload(id: string) {
   const { error } = await supabase.from("entries").delete().eq("id", id);
   if (error) throw error;
   uploadsCache = uploadsCache.filter((upload) => upload.id !== id);
-  notify();
-}
-
-/** Moves a draft into the upload history and removes it from drafts. */
-export async function promoteDraft(id: string) {
-  const { data: draftRow, error: fetchError } = await supabase
-    .from("drafts")
-    .select("medications, notes")
-    .eq("id", id)
-    .single();
-  if (fetchError) throw fetchError;
-
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  if (!userId) throw new Error("You must be signed in to promote a draft.");
-
-  const { data: entryRow, error: insertError } = await supabase
-    .from("entries")
-    .insert({
-      user_id: userId,
-      medications: draftRow.medications,
-      notes: draftRow.notes,
-      status: "synced",
-      age_verified: true,
-    })
-    .select("id, created_at, medications, notes, status")
-    .single();
-  if (insertError) throw insertError;
-
-  const { error: deleteError } = await supabase.from("drafts").delete().eq("id", id);
-  if (deleteError) throw deleteError;
-
-  draftsCache = draftsCache.filter((draft) => draft.id !== id);
-  uploadsCache = [rowToUpload(entryRow), ...uploadsCache];
   notify();
 }

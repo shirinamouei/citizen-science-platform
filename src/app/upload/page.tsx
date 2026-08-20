@@ -2,9 +2,10 @@
 
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
-import { addUpload, saveDraft, type CollectedEntry } from "@/lib/upload-store";
+import { addUpload, type CollectedEntry } from "@/lib/upload-store";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
-import { useAuth } from "@/lib/auth-context";
+import { validateAttachment } from "@/lib/file-validation";
+import { MedicationAutocomplete } from "@/components/MedicationAutocomplete";
 import styles from "./upload.module.css";
 
 const checkIcon = (
@@ -20,21 +21,6 @@ const dataHandlingPoints = [
   "Delete your contributions anytime*",
 ];
 
-const MEDICATION_OPTIONS = [
-  "Sertraline (Zoloft)",
-  "Fluoxetine (Prozac)",
-  "Escitalopram (Lexapro)",
-  "Paroxetine (Paxil)",
-  "Citalopram (Celexa)",
-  "Venlafaxine (Effexor)",
-  "Duloxetine (Cymbalta)",
-  "Alprazolam (Xanax)",
-  "Clonazepam (Klonopin)",
-  "Diazepam (Valium)",
-  "Lorazepam (Ativan)",
-  "Other",
-];
-
 function MedicationEntryFields({
   id,
   index,
@@ -46,8 +32,6 @@ function MedicationEntryFields({
   showRemove: boolean;
   onRemove: () => void;
 }) {
-  const [medication, setMedication] = useState("");
-
   return (
     <div className={styles.medicationEntry}>
       <div className={styles.medicationEntryHead}>
@@ -59,33 +43,13 @@ function MedicationEntryFields({
         )}
       </div>
       <div className={styles.fieldRow3}>
-        <div className={styles.field}>
-          <label>
-            Medication name <span className={styles.hint}>(one medication only)</span>
-          </label>
-          <select
-            name={`med-name-${id}`}
-            value={medication}
-            onChange={(e) => setMedication(e.target.value)}
-            required
-          >
-            <option value="" disabled>
-              Select one
-            </option>
-            {MEDICATION_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-          {medication === "Other" && (
-            <input
-              type="text"
-              name={`med-name-other-${id}`}
-              placeholder="Type the medication name"
-              className={styles.otherInput}
-              required
-            />
-          )}
-        </div>
+        <MedicationAutocomplete
+          id={`med-name-${id}`}
+          name={`med-name-${id}`}
+          label="Medication name"
+          hint="(one medication only)"
+          required
+        />
         <div className={styles.field}>
           <label>
             Starting dose <span className={styles.hint}>(mg, best estimate is fine)</span>
@@ -129,18 +93,36 @@ function MedicationEntryFields({
 }
 
 export default function UploadPage() {
-  const { isSignedIn } = useAuth();
   const idBase = useId();
   const medicationCounter = useRef(0);
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
   const [submitted, setSubmitted] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dob, setDob] = useState("");
   const underage = isMinor(dob);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const [attachment, setAttachment] = useState<{ file: File; extension: string } | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [validatingFile, setValidatingFile] = useState(false);
+
+  async function handleFileSelected(selected: File | null) {
+    setFileError(null);
+    if (!selected) {
+      setAttachment(null);
+      return;
+    }
+    setValidatingFile(true);
+    const result = await validateAttachment(selected);
+    setValidatingFile(false);
+    if (!result.ok) {
+      setAttachment(null);
+      setFileError(result.error);
+      return;
+    }
+    setAttachment({ file: selected, extension: result.extension });
+  }
 
   function addMedication() {
     medicationCounter.current += 1;
@@ -155,9 +137,7 @@ export default function UploadPage() {
     const data = new FormData(formRef.current ?? undefined);
     const medications = medicationIds
       .map((id) => {
-        const selected = ((data.get(`med-name-${id}`) as string) || "").trim();
-        const custom = ((data.get(`med-name-other-${id}`) as string) || "").trim();
-        const name = selected === "Other" ? custom : selected;
+        const name = ((data.get(`med-name-${id}`) as string) || "").trim();
         const startingDose = ((data.get(`med-dose-${id}`) as string) || "").trim();
         const currentDose = ((data.get(`med-dose-current-${id}`) as string) || "").trim();
         return name ? { name, startingDose, currentDose } : null;
@@ -165,20 +145,6 @@ export default function UploadPage() {
       .filter((m): m is NonNullable<typeof m> => m !== null);
     const notes = ((data.get("notes") as string) || "").trim();
     return { medications, notes };
-  }
-
-  async function handleSaveDraft() {
-    setSubmitError(null);
-    setSubmitting(true);
-    try {
-      await saveDraft(collectEntry());
-      setDraftSaved(true);
-      setSubmitted(false);
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Couldn't save draft. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
   }
 
   return (
@@ -205,9 +171,8 @@ export default function UploadPage() {
               setSubmitError(null);
               setSubmitting(true);
               try {
-                await addUpload(collectEntry());
+                await addUpload(collectEntry(), attachment);
                 setSubmitted(true);
-                setDraftSaved(false);
               } catch (err) {
                 setSubmitError(err instanceof Error ? err.message : "Couldn't submit your entry. Please try again.");
               } finally {
@@ -248,17 +213,45 @@ export default function UploadPage() {
 
             <div className={styles.field}>
               <label>
-                Attach a file <span className={styles.hint}>(pharmacy printout, journal entry, spreadsheet, CSV, etc., optional)</span>
+                Attach a file <span className={styles.hint}>(optional)</span>
               </label>
-              <div className={styles.dropzone} onClick={() => fileInputRef.current?.click()}>
+              <div
+                className={styles.dropzone}
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleFileSelected(e.dataTransfer.files[0] ?? null);
+                }}
+              >
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 15V4M12 4L7 9M12 4l5 5" stroke="#112845" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="#112845" strokeWidth="1.7" strokeLinecap="round" />
                 </svg>
-                <strong>Drop a file here or click to browse</strong>
-                <span>CSV, XLSX, or PDF, up to 10MB</span>
-                <input ref={fileInputRef} type="file" style={{ display: "none" }} />
+                <strong>{attachment ? attachment.file.name : "Drop a file here or click to browse"}</strong>
+                <span>{validatingFile ? "Checking file…" : "CSV, XLSX, PDF, PNG, or JPG, up to 3MB"}</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg"
+                  style={{ display: "none" }}
+                  onChange={(e) => handleFileSelected(e.target.files?.[0] ?? null)}
+                />
               </div>
+              {fileError && <p className={styles.errorText}>{fileError}</p>}
+              {attachment && !fileError && (
+                <button
+                  type="button"
+                  className={styles.removeMedBtn}
+                  style={{ marginTop: "8px" }}
+                  onClick={() => {
+                    setAttachment(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                >
+                  Remove file
+                </button>
+              )}
             </div>
 
             <div className={styles.field}>
@@ -288,14 +281,9 @@ export default function UploadPage() {
             </div>
 
             <div className={`${styles.submitRow} mt-24`}>
-              <button type="submit" className="btn btn-primary" disabled={underage || submitting}>
+              <button type="submit" className="btn btn-primary" disabled={underage || submitting || validatingFile}>
                 {submitting ? "Submitting…" : "Submit data"}
               </button>
-              {isSignedIn && (
-                <button type="button" className="btn btn-secondary" onClick={handleSaveDraft} disabled={submitting}>
-                  Save as draft
-                </button>
-              )}
             </div>
             {submitError && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b3261e", fontSize: "14px", fontWeight: 600 }}>
@@ -305,11 +293,6 @@ export default function UploadPage() {
             {submitted && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#1a7f4a", fontSize: "14px", fontWeight: 600 }}>
                 ✓ Thanks. Your entry has been added to your upload history.
-              </div>
-            )}
-            {draftSaved && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b8690a", fontSize: "14px", fontWeight: 600 }}>
-                ✓ Saved as a draft. You can find it on your profile page.
               </div>
             )}
           </form>

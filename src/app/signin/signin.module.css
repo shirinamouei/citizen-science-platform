@@ -239,35 +239,6 @@
   cursor: not-allowed;
 }
 
-.autocompleteList {
-  position: absolute;
-  z-index: 10;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin: 4px 0 0;
-  padding: 6px;
-  list-style: none;
-  background: var(--white);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow);
-  max-height: 220px;
-  overflow-y: auto;
-}
-.autocompleteItem {
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 13.5px;
-  color: var(--text);
-  cursor: pointer;
-}
-.autocompleteItem:hover,
-.autocompleteItemActive {
-  background: var(--lavender);
-  color: var(--navy);
-}
-
 @media (max-width: 640px) {
   .fieldRow { grid-template-columns: minmax(0, 1fr); }
   .checkboxGroup { grid-template-columns: minmax(0, 1fr); }
