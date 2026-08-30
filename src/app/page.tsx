@@ -111,7 +111,7 @@ export default function Home() {
       <section className="section-tight">
         <div className="wrap">
           <div className="text-center mb-48">
-            <h2>Sign in, or donate data as a guest</h2>
+            <h2>Sign in, or donate data as a guest.</h2>
           </div>
           <div className={styles.accessGrid}>
             <div className={`card ${styles.accessCard}`}>
@@ -126,7 +126,7 @@ export default function Home() {
                 Create an account to bring tapering data you have in different formats,
                 like spreadsheets, PDFs, and past notes, into one place before you donate it.
               </p>
-              <Link href="/signin" className="btn btn-primary mt-16">
+              <Link href="/signin" className="btn btn-primary">
                 Sign In
               </Link>
             </div>
@@ -139,7 +139,7 @@ export default function Home() {
               </div>
               <h3>Continue as a guest</h3>
               <p className="text-muted-sm">Donate a single entry anonymously right away, no account needed.</p>
-              <Link href="/upload" className="btn btn-secondary mt-16">
+              <Link href="/upload" className="btn btn-secondary">
                 Continue as Guest
               </Link>
             </div>
