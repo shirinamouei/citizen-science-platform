@@ -49,11 +49,7 @@ export default function Header() {
               </li>
             ))}
           </ul>
-          {isSignedIn ? (
-            <Link href="/profile" className="btn btn-dark btn-sm">
-              Profile
-            </Link>
-          ) : (
+          {!isSignedIn && (
             <Link href="/signin" className="btn btn-dark btn-sm">
               Sign In
             </Link>

@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { addUpload, type CollectedEntry } from "@/lib/upload-store";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import { validateAttachment } from "@/lib/file-validation";
@@ -48,26 +49,32 @@ function MedicationEntryFields({
           id={`med-name-${id}`}
           name={`med-name-${id}`}
           label="Medication name"
-          hint="(one medication only)"
+          hint=""
           required
         />
         <div className={styles.field}>
           <label>
-            Starting dose <span className={styles.hint}>(mg, best estimate is fine)</span>
+            Starting dose 
           </label>
-          <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
+          <div className={styles.doseInputWrap}>
+            <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
+            <span className={styles.doseUnit}>mg</span>
+          </div>
         </div>
         <div className={styles.field}>
           <label>
-            Current dose <span className={styles.hint}>(mg, as of today)</span>
+            Current dose
           </label>
-          <input type="number" name={`med-dose-current-${id}`} placeholder="e.g. 75" required />
+          <div className={styles.doseInputWrap}>
+            <input type="number" name={`med-dose-current-${id}`} placeholder="e.g. 75" required />
+            <span className={styles.doseUnit}>mg</span>
+          </div>
         </div>
       </div>
       <div className={styles.fieldRow}>
         <div className={styles.field}>
           <label>
-            Taper start date <span className={styles.hint}>(approximate is fine)</span>
+            Taper start date
           </label>
           <input type="date" />
         </div>
@@ -94,10 +101,10 @@ function MedicationEntryFields({
 }
 
 export default function UploadPage() {
+  const router = useRouter();
   const idBase = useId();
   const medicationCounter = useRef(0);
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
-  const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dob, setDob] = useState("");
@@ -178,7 +185,7 @@ export default function UploadPage() {
               setSubmitting(true);
               try {
                 await addUpload(collectEntry(), attachment, turnstileToken);
-                setSubmitted(true);
+                router.push("/profile");
               } catch (err) {
                 setSubmitError(err instanceof Error ? err.message : "Couldn't submit your entry. Please try again.");
               } finally {
@@ -302,11 +309,6 @@ export default function UploadPage() {
             {submitError && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b3261e", fontSize: "14px", fontWeight: 600 }}>
                 {submitError}
-              </div>
-            )}
-            {submitted && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#1a7f4a", fontSize: "14px", fontWeight: 600 }}>
-                ✓ Thanks. Your entry has been added to your upload history.
               </div>
             )}
           </form>

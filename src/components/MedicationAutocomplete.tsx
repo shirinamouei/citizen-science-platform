@@ -35,7 +35,7 @@ export function MedicationAutocomplete({
   return (
     <div className={styles.field}>
       <label htmlFor={id}>
-        {label} <span className={styles.hint}>{hint}</span>
+        {label} {hint && <span className={styles.hint}>{hint}</span>}
       </label>
       <input
         id={id}

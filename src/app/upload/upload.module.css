@@ -44,6 +44,17 @@
   border-color: #d64545;
   box-shadow: 0 0 0 4px rgba(214,69,69,0.15);
 }
+.doseInputWrap { position: relative; }
+.field .doseInputWrap input[type="number"] { padding-right: 36px; }
+.doseUnit {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
 .errorText {
   color: #c0392b;
   font-size: 12.5px;

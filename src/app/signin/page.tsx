@@ -270,6 +270,7 @@ export default function SignInPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [createTurnstileToken, setCreateTurnstileToken] = useState<string | null>(null);
   const [confirmEmailSent, setConfirmEmailSent] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const [touched, setTouched] = useState({
     email: false,
@@ -348,6 +349,10 @@ export default function SignInPage() {
   async function handleCreateAccountSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (underage) return;
+    if (!consentChecked) {
+      setCreateError("Please check the box to confirm you understand how your responses will be used.");
+      return;
+    }
     if (!createTurnstileToken) {
       setCreateError("Please complete the verification check below.");
       return;
@@ -815,7 +820,11 @@ export default function SignInPage() {
                   />
 
                   <div className={styles.consentBox}>
-                    <input type="checkbox" required />
+                    <input
+                      type="checkbox"
+                      checked={consentChecked}
+                      onChange={(e) => setConsentChecked(e.target.checked)}
+                    />
                     <span>
                       I understand my responses will be anonymized and used in aggregate for
                       research purposes, per the{" "}
