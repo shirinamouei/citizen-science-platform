@@ -12,7 +12,13 @@ import { useAuth } from "./auth-context";
    to them before they navigate away; it's never persisted and resets on
    reload. */
 
-export type MedicationRecord = { name: string; startingDose?: string; currentDose?: string };
+export type MedicationRecord = {
+  name: string;
+  startingDose?: string;
+  currentDose?: string;
+  taperStartDate?: string;
+  taperMethod?: string;
+};
 
 export type UploadEntry = {
   id: string;

@@ -221,7 +221,7 @@ export default function ProfilePage() {
                         <th>Dose</th>
                         <th>Notes</th>
                         <th>Status</th>
-                        <th></th>
+                        {isSignedIn && <th></th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -240,25 +240,27 @@ export default function ProfilePage() {
                               {upload.status === "synced" ? "Synced" : "Processing"}
                             </span>
                           </td>
-                          <td>
-                            <button
-                              type="button"
-                              className={styles.deleteBtn}
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Delete this entry? This removes it from the database and can't be undone."
-                                  )
-                                ) {
-                                  deleteUpload(upload.id).catch((err) =>
-                                    window.alert(err instanceof Error ? err.message : "Couldn't delete this entry.")
-                                  );
-                                }
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </td>
+                          {isSignedIn && (
+                            <td>
+                              <button
+                                type="button"
+                                className={styles.deleteBtn}
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      "Delete this entry? This removes it from the database and can't be undone."
+                                    )
+                                  ) {
+                                    deleteUpload(upload.id).catch((err) =>
+                                      window.alert(err instanceof Error ? err.message : "Couldn't delete this entry.")
+                                    );
+                                  }
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

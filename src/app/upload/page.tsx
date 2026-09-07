@@ -77,13 +77,13 @@ function MedicationEntryFields({
           <label>
             Taper start date
           </label>
-          <input type="date" />
+          <input type="date" name={`med-taper-start-${id}`} />
         </div>
         <div className={styles.field}>
           <label>
             Taper method <span className={styles.hint}>(current or most recent)</span>
           </label>
-          <select defaultValue="">
+          <select name={`med-taper-method-${id}`} defaultValue="">
             <option value="" disabled>
               Select one
             </option>
@@ -151,7 +151,9 @@ export default function UploadPage() {
         const name = ((data.get(`med-name-${id}`) as string) || "").trim();
         const startingDose = ((data.get(`med-dose-${id}`) as string) || "").trim();
         const currentDose = ((data.get(`med-dose-current-${id}`) as string) || "").trim();
-        return name ? { name, startingDose, currentDose } : null;
+        const taperStartDate = ((data.get(`med-taper-start-${id}`) as string) || "").trim();
+        const taperMethod = ((data.get(`med-taper-method-${id}`) as string) || "").trim();
+        return name ? { name, startingDose, currentDose, taperStartDate, taperMethod } : null;
       })
       .filter((m): m is NonNullable<typeof m> => m !== null);
     const notes = ((data.get("notes") as string) || "").trim();
