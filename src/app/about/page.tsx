@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
-  title: "About Us | Cascade",
+  title: "About Us",
+  description: "Why Cascade exists, how it protects your data, and the research it supports.",
 };
 
 const values = [

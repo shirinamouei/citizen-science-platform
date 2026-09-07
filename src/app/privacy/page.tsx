@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import styles from "./privacy.module.css";
 
 export const metadata: Metadata = {
-  title: "Privacy | Cascade",
+  title: "Privacy",
+  description: "How Cascade anonymizes, stores, and protects the tapering data you donate.",
 };
 
 export default function PrivacyPage() {

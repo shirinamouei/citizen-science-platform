@@ -3,7 +3,8 @@ import Link from "next/link";
 import styles from "./not-found.module.css";
 
 export const metadata: Metadata = {
-  title: "Page not found | Cascade",
+  title: "Page not found",
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {
