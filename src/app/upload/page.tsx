@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addUpload, type CollectedEntry } from "@/lib/upload-store";
+import { useAuth } from "@/lib/auth-context";
 import { isMinor, MINIMUM_AGE_DISCLAIMER } from "@/lib/age";
 import { validateAttachment } from "@/lib/file-validation";
 import { MedicationAutocomplete } from "@/components/MedicationAutocomplete";
@@ -102,13 +103,14 @@ function MedicationEntryFields({
 
 export default function UploadPage() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const idBase = useId();
   const medicationCounter = useRef(0);
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dob, setDob] = useState("");
-  const underage = isMinor(dob);
+  const underage = !isSignedIn && isMinor(dob);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [attachment, setAttachment] = useState<{ file: File; extension: string } | null>(null);
@@ -267,19 +269,21 @@ export default function UploadPage() {
               )}
             </div>
 
-            <div className={styles.field}>
-              <label>
-                Date of birth <span className={styles.hint}>(confirms you&apos;re 18 or older, not linked to your entry)</span>
-              </label>
-              <input
-                type="date"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                className={underage ? styles.inputError : ""}
-                required
-              />
-              {underage && <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>}
-            </div>
+            {!isSignedIn && (
+              <div className={styles.field}>
+                <label>
+                  Date of birth <span className={styles.hint}>(confirms you&apos;re 18 or older, not linked to your entry)</span>
+                </label>
+                <input
+                  type="date"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className={underage ? styles.inputError : ""}
+                  required
+                />
+                {underage && <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>}
+              </div>
+            )}
 
             <div className={styles.consentBox}>
               <input type="checkbox" required />

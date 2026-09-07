@@ -823,7 +823,10 @@ export default function SignInPage() {
                     <input
                       type="checkbox"
                       checked={consentChecked}
-                      onChange={(e) => setConsentChecked(e.target.checked)}
+                      onChange={(e) => {
+                        setConsentChecked(e.target.checked);
+                        if (e.target.checked) setCreateError(null);
+                      }}
                     />
                     <span>
                       I understand my responses will be anonymized and used in aggregate for

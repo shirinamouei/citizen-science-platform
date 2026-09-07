@@ -10,6 +10,7 @@ type AuthContextValue = {
   isSignedIn: boolean;
   loading: boolean;
   email: string | null;
+  preferredName: string | null;
   signInWithPassword: (email: string, password: string, captchaToken: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, preferredName: string, captchaToken: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { preferred_name: preferredName }, captchaToken },
+      options: { data: { preferred_name: preferredName, display_name: preferredName }, captchaToken },
     });
     if (error) return { error: error.message };
     return { error: null, needsEmailConfirmation: !data.session };
@@ -85,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isSignedIn: !!session,
         loading,
         email: session?.user.email ?? null,
+        preferredName: (session?.user.user_metadata?.preferred_name as string | undefined) ?? null,
         signInWithPassword,
         signUp,
         signOut,

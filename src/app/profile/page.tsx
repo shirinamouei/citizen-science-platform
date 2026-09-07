@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
 import { deleteUpload, useUploads, type UploadEntry } from "@/lib/upload-store";
@@ -106,9 +105,9 @@ function Milestone({ label, done }: { label: string; done: boolean }) {
 }
 
 export default function ProfilePage() {
-  const { isSignedIn, email, signOut } = useAuth();
+  const { isSignedIn, email, preferredName, signOut } = useAuth();
   const isGuest = !isSignedIn;
-  const router = useRouter();
+  const displayName = preferredName || email;
   const uploads = useUploads();
   const stats = buildStats(uploads.length, uploads[0]?.date ?? "—");
   const milestones = buildMilestones(uploads.length);
@@ -121,8 +120,8 @@ export default function ProfilePage() {
           <div className="wrap">
             <div className={styles.profileHeader}>
               <div className={styles.avatar}>
-                {isSignedIn && email ? (
-                  email[0].toUpperCase()
+                {isSignedIn && displayName ? (
+                  displayName[0].toUpperCase()
                 ) : (
                   <svg viewBox="0 0 24 24" fill="none" width="28" height="28">
                     <circle cx="12" cy="8" r="4" stroke="#112845" strokeWidth="1.6" />
@@ -132,7 +131,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className={styles.profileName}>
-                  {isSignedIn && email ? email : "Guest"}{" "}
+                  {isSignedIn && displayName ? displayName : "Guest"}{" "}
                   {isGuest && (
                     <span className="guest-pill" style={{ display: "inline-flex" }}>
                       <svg viewBox="0 0 24 24" fill="none" width="12" height="12">
@@ -158,7 +157,6 @@ export default function ProfilePage() {
                   style={{ marginLeft: "auto" }}
                   onClick={async () => {
                     await signOut();
-                    router.push("/");
                   }}
                 >
                   Sign out
