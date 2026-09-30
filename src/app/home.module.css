@@ -1,9 +1,10 @@
 .hero { padding: 32px 0 40px; }
+.hero h1 { font-size: 48px; }
 .heroHighlight { color: var(--orange); }
 .heroGrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
 .heroStats { display: flex; gap: 36px; margin-top: 44px; }
 .heroStats div strong { display: block; font-size: 26px; color: var(--navy); font-weight: 800; }
-.heroStats div span { font-size: 13px; color: var(--text-muted); }
+.heroStats div span { font-size: 16px; color: var(--text-muted); }
 
 /* ---------- Walkthrough animation ---------- */
 .walkthrough { display: flex; flex-direction: column; }
@@ -275,6 +276,7 @@
   .qrSection { flex-direction: column; text-align: center; }
   .qrText { max-width: 100%; }
   .heroStats { flex-wrap: wrap; row-gap: 18px; justify-content: center; text-align: center; }
+  .hero h1 { font-size: 36px; }
 }
 
 @media (max-width: 640px) {

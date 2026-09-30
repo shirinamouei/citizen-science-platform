@@ -29,7 +29,7 @@
 html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
-  font-family: var(--font-halant), Georgia, serif;
+  font-family: var(--font-oxygen), Helvetica, Arial, sans-serif;
   font-weight: 400;
   background: var(--bg);
   color: var(--text);
@@ -212,6 +212,7 @@ button { font-family: inherit; }
 .btn-dark:hover { background: var(--navy-soft); transform: translateY(-2px); }
 
 .btn-sm { padding: 9px 18px; font-size: 13.5px; }
+.btn-lg { padding: 16px 32px; font-size: 17px; }
 
 .btn:disabled {
   opacity: 0.5;

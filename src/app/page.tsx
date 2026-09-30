@@ -156,7 +156,7 @@ export default function Home() {
               Your data helps our mission as researchers to help future
               patients taper more safely.
             </p>
-            <Link href="/about" className="btn btn-secondary mt-24">
+            <Link href="/about" className="btn btn-primary btn-lg mt-24">
               Read more about our mission
             </Link>
           </div>
