@@ -16,10 +16,15 @@ jobs:
     steps:
       - name: Ping Supabase REST endpoint
         run: |
-          status=$(curl -s -o /dev/null -w '%{http_code}' \
+          # Prefer: count=exact makes PostgREST run a real COUNT(*) query
+          # against Postgres, so the ping is database activity rather than
+          # just an API-layer hit.
+          status=$(curl -s -o response.txt -w '%{http_code}' \
             -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}" \
+            -H "Prefer: count=exact" \
             "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/medication_catalog?select=display_name&limit=1")
           echo "Supabase responded with HTTP $status"
-          if [ "$status" -ge 400 ]; then
+          cat response.txt
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
             exit 1
           fi
