@@ -3,6 +3,8 @@ name: Supabase keep-alive
 # Free-tier Supabase projects pause after a week of no API activity.
 # This replaces the old Vercel cron route — GitHub Actions calls Supabase
 # directly, so there's no public endpoint on our own site to protect.
+# Queries a real anon-readable table: the /rest/v1/ root returns 401 for
+# publishable keys.
 on:
   schedule:
     - cron: "0 12 */5 * *"
@@ -16,7 +18,7 @@ jobs:
         run: |
           status=$(curl -s -o /dev/null -w '%{http_code}' \
             -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}" \
-            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/")
+            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/medication_catalog?select=display_name&limit=1")
           echo "Supabase responded with HTTP $status"
           if [ "$status" -ge 400 ]; then
             exit 1
