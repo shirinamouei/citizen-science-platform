@@ -98,16 +98,6 @@ export function useUploads() {
   return useSyncExternalStore(subscribe, () => (isSignedIn ? uploadsCache : guestUploads), () => EMPTY_UPLOADS);
 }
 
-/** Uploads to the private `entry-attachments` bucket under a path scoped to
- * the owning user (or `guest/` for anonymous submissions) and returns the
- * storage path to store alongside the entry row. */
-async function uploadAttachment(id: string, userId: string | null, file: File, extension: string) {
-  const path = `${userId ?? "guest"}/${id}${extension}`;
-  const { error } = await supabase.storage.from("entry-attachments").upload(path, file, { contentType: file.type });
-  if (error) throw error;
-  return path;
-}
-
 /** Reads the friendly message out of a submit-entry Edge Function error
  * response, falling back to a generic one if the body can't be parsed. */
 async function extractFunctionErrorMessage(error: unknown): Promise<string> {
@@ -125,8 +115,8 @@ async function extractFunctionErrorMessage(error: unknown): Promise<string> {
 
 /** Creation always goes through the submit-entry Edge Function, which
  * verifies the Turnstile token and enforces a rate limit before writing the
- * row — direct table inserts are revoked at the database level so this is
- * the only path in for both signed-in and guest submissions. */
+ * row and uploading any attachment — the file travels with the request so
+ * storage never has a client-writable path. */
 export async function addUpload(
   entry: CollectedEntry,
   attachment: { file: File; extension: string } | null | undefined,
@@ -136,11 +126,14 @@ export async function addUpload(
   const userId = userData.user?.id ?? null;
   const id = crypto.randomUUID();
 
-  const attachmentPath = attachment ? await uploadAttachment(id, userId, attachment.file, attachment.extension) : null;
+  const form = new FormData();
+  form.append("id", id);
+  form.append("medications", JSON.stringify(entry.medications));
+  if (entry.notes) form.append("notes", entry.notes);
+  form.append("turnstileToken", turnstileToken);
+  if (attachment) form.append("file", attachment.file, `attachment${attachment.extension}`);
 
-  const { data, error } = await supabase.functions.invoke("submit-entry", {
-    body: { id, medications: entry.medications, notes: entry.notes || null, attachmentPath, turnstileToken },
-  });
+  const { data, error } = await supabase.functions.invoke("submit-entry", { body: form });
   if (error) throw new Error(await extractFunctionErrorMessage(error));
 
   const upload = rowToUpload(data.entry);
