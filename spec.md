@@ -28,11 +28,12 @@ Although digital products exist to help those tapering with tracking symptoms, w
 
 ### Security Considerations
 
-The site is a static export hosted on GitHub Pages with no application server. Every request to Supabase — signed-in or guest — comes directly from the browser using the public `anon` key. That means Postgres Row Level Security (RLS) is the only access-control layer in the system; there is no server-side code to fall back on. The policies below are a draft to apply once the Supabase project exists, written against the data this app already collects (see [signin/page.tsx](src/app/signin/page.tsx) and [upload/page.tsx](src/app/upload/page.tsx)).
+The site is a static export hosted on GitHub Pages with no application server. Reads and deletes go directly from the browser to Supabase using the public `anon` key, so Postgres Row Level Security (RLS) is the access-control layer for them. **Creating data is the exception:** every new entry, and its attachment, goes through the `submit-entry` Edge Function ([supabase/functions/submit-entry/index.ts](supabase/functions/submit-entry/index.ts)), which is the only server-side code in the system. It verifies a Cloudflare Turnstile CAPTCHA token, enforces a per-network rate limit, validates any attached file, and then writes using the service role. The policies below are written against the data this app collects (see [signin/page.tsx](src/app/signin/page.tsx) and [upload/page.tsx](src/app/upload/page.tsx)).
 
 #### Authentication
 - Real Supabase Auth (email/password) replaces the current localStorage mock in [auth-context.tsx](src/lib/auth-context.tsx), so `auth.uid()` in policies below refers to a verified session, not an unverified string.
 - "Continue as Guest" stays unauthenticated (`anon` role) — guests can submit data but never read anything back, matching the current in-memory-only behavior in [upload-store.ts](src/lib/upload-store.ts).
+- Sign-in and account creation are protected by Turnstile through Supabase Auth's CAPTCHA setting (the token is passed as `captchaToken`).
 
 #### Database access control (Row Level Security)
 
@@ -78,16 +79,22 @@ create policy "entries_select_own" on entries for select using (auth.uid() = use
 create policy "entries_update_own" on entries for update using (auth.uid() = user_id);
 create policy "entries_delete_own" on entries for delete using (auth.uid() = user_id);
 
-create policy "entries_insert_authenticated" on entries
-  for insert to authenticated
-  with check (auth.uid() = user_id and age_verified = true);
-
-create policy "entries_insert_guest" on entries
-  for insert to anon
-  with check (user_id is null and age_verified = true);
--- Deliberately no select/update/delete policy for the anon role: guest
+-- Deliberately NO insert policy for anon or authenticated. Rows are created
+-- only by the submit-entry Edge Function (service role, which bypasses RLS),
+-- so the CAPTCHA and rate limit cannot be skipped by calling the REST API
+-- directly. Also no select/update/delete policy for the anon role: guest
 -- submissions are write-only, so a guest can never read back anyone's
 -- data, including their own, after the page reloads.
+revoke insert, update on public.entries from anon, authenticated;
+```
+
+**Creating an entry** is done by the `submit_entry` Postgres function, called only by the Edge Function. Its `EXECUTE` privilege is limited to `postgres` and `service_role`; if it were left at the default (`PUBLIC`), anyone with the public key could call `/rest/v1/rpc/submit_entry` and bypass the CAPTCHA. Verify with:
+
+```sql
+select grantee, privilege_type
+from information_schema.routine_privileges
+where routine_name = 'submit_entry';
+-- expect only postgres and service_role
 ```
 
 Note: the date-of-birth field is only used to gate submission (`age_verified`) and is never written to `entries` — the UI already tells users DOB is "not linked to your entry," so the schema should honor that by never persisting it alongside tapering data.
@@ -110,34 +117,34 @@ create policy "drafts_all_own" on drafts
 ```
 
 #### File attachments (Supabase Storage)
-The upload form accepts a pharmacy printout, spreadsheet, or PDF up to 10MB. Storage needs its own policies, mirroring `entries`:
+The upload form accepts a pharmacy printout, spreadsheet, PDF or image (CSV, XLSX, PDF, PNG, JPG) up to 3MB. The browser never writes to storage directly: the file is sent to the `submit-entry` Edge Function in the same request as the entry. The function verifies the CAPTCHA **first**, then validates the file server-side (size, extension allow-list, magic bytes — the same checks as [file-validation.ts](src/lib/file-validation.ts), which only exist client-side as a convenience), builds the storage path itself as `<user id or "guest">/<entry id>.<ext>` (never trusting a client-supplied path), and uploads with the service role. If the database insert fails afterward, the function removes the file.
 
 ```sql
-insert into storage.buckets (id, name, public) values ('entry-attachments', 'entry-attachments', false);
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'entry-attachments', 'entry-attachments', false, 3145728,
+  array['text/csv','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/pdf','image/png','image/jpeg']
+);
 
-create policy "attachments_insert" on storage.objects
-  for insert to public
-  with check (
-    bucket_id = 'entry-attachments'
-    and (metadata->>'size')::bigint <= 10485760
-    and metadata->>'mimetype' in (
-      'text/csv',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/pdf'
-    )
-  );
+-- Deliberately NO insert policy on storage.objects for this bucket. An earlier
+-- design let the browser upload directly (a policy allowing `guest/` or the
+-- user's own folder), which let a script fill storage without solving the
+-- CAPTCHA. That policy ("attachments insert own or guest") has been dropped.
 
-create policy "attachments_select_own" on storage.objects
+create policy "attachments select own" on storage.objects
   for select to authenticated using (bucket_id = 'entry-attachments' and owner = auth.uid());
 
-create policy "attachments_delete_own" on storage.objects
+create policy "attachments delete own" on storage.objects
   for delete to authenticated using (bucket_id = 'entry-attachments' and owner = auth.uid());
 ```
 
+The bucket must exist before the first attachment submission; if it is missing, uploads fail with a 500 ("Couldn't save your attachment"). The site does not currently display stored attachments; they are viewed in the Supabase dashboard under Storage.
+
 #### Secrets management
 - Only the Project URL and `publishable` key are ever used client-side, as `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — both are expected to be visible in the shipped JS bundle.
-- The `service_role` key is never used by this app. If a future feature genuinely needs to bypass RLS (e.g. building the aggregate research export below), that logic belongs in a Supabase Edge Function, not in this repo or its GitHub Actions secrets, since GitHub Pages has no server to keep it off the client.
-- The existing keep-alive cron ([keep-alive/route.ts](src/app/api/cron/keep-alive/route.ts)) only uses the `anon` key already, so it carries over to a GitHub Actions scheduled workflow without any secret-handling change.
+- The `service_role` key is never used client-side or in this repo or its GitHub Actions secrets. It is used only inside the `submit-entry` Edge Function, where Supabase injects it as an environment variable. The function's other secrets (`TURNSTILE_SECRET_KEY`, `IP_HASH_PEPPER`) are stored as Edge Function secrets, not in the repo. Any future feature that needs to bypass RLS (e.g. the aggregate research export below) belongs in an Edge Function the same way.
+- Use real Turnstile keys in production — Cloudflare's published test keys (starting `1x0000...`) always pass and would disable the CAPTCHA.
+- The keep-alive job ([.github/workflows/keep-alive.yml](.github/workflows/keep-alive.yml)) only uses the `anon` key (see "Keep-alive" below).
 
 #### Repository & CI hygiene
 - Confirm `.env.local` stays git-ignored (Next.js does this by default) and check git history for anything already committed before making the repo public.
@@ -145,7 +152,15 @@ create policy "attachments_delete_own" on storage.objects
 - Store the two Supabase values as GitHub Actions repo secrets (Settings → Secrets and variables → Actions), never as plain workflow variables.
 
 #### Abuse mitigation
-Guest inserts have no auth in front of them, so nothing stops a script from submitting many fake entries. Options worth adding before launch: a client-side CAPTCHA widget (e.g. Cloudflare Turnstile) gating the guest submit button, and/or a `check` constraint capping `notes` length and array size on `medications` so a single malicious payload can't be arbitrarily large.
+Guest submissions have no auth in front of them, so the protections live in the `submit-entry` Edge Function:
+
+- **CAPTCHA** — Cloudflare Turnstile ([Turnstile.tsx](src/components/Turnstile.tsx)) gates the submit button, and the function verifies the token with Cloudflare on every request. Verification happens server-side, so hiding the button or forging a request does not bypass it.
+- **Rate limit** — the function hashes the caller's IP with a secret pepper (`IP_HASH_PEPPER`) and the `submit_entry` function rejects too many submissions from the same hash (`rate_limited`, returned as HTTP 429). Raw IPs are not stored.
+- **No bypass routes** — no insert policy or grant on `entries`, `EXECUTE` on `submit_entry` limited to the service role, and no client write access to the attachments bucket (see above).
+- **Still open:** a `check` constraint capping `notes` length and the size of the `medications` array, so a single payload can't be arbitrarily large.
+
+#### Keep-alive
+Free-tier Supabase projects pause after a period of inactivity. A scheduled GitHub Actions workflow ([keep-alive.yml](.github/workflows/keep-alive.yml)) runs every 5 days and queries `medication_catalog` — a table `anon` can read — with `Prefer: count=exact`, so Postgres performs a real count query. It uses only the public URL and publishable key, passed as repo secrets, and fails on any non-2xx response. It does not touch `submit-entry`, so it needs no CAPTCHA token. Pinging the `/rest/v1/` root does not work: it returns 401 for publishable keys. It is not confirmed that this ping prevents pausing; the project paused once after a successful ping. If it recurs, options are a write-based ping, a more frequent schedule, or the Pro plan.
 
 ### Privacy Considerations
 

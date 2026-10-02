@@ -134,6 +134,7 @@ Deno.serve(async (req) => {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const checked = validateFile(file, bytes);
     if (!checked) {
+      console.error("attachment rejected:", { name: file.name, type: file.type, size: file.size });
       return json({ error: "Unsupported or invalid file. Please attach a CSV, XLSX, PDF, PNG, or JPG up to 3MB." }, 400);
     }
     uploadedPath = `${owner}/${id}${checked.extension}`;
@@ -141,6 +142,7 @@ Deno.serve(async (req) => {
       .from("entry-attachments")
       .upload(uploadedPath, bytes, { contentType: checked.contentType });
     if (uploadError) {
+      console.error("attachment upload failed:", uploadError.message, { path: uploadedPath, size: bytes.length });
       return json({ error: "Couldn't save your attachment. Please try again." }, 500);
     }
   } else if (attachmentPath) {
