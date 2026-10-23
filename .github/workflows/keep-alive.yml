@@ -1,28 +1,27 @@
 name: Supabase keep-alive
 
-# Free-tier Supabase projects pause after a week of no API activity.
-# This replaces the old Vercel cron route — GitHub Actions calls Supabase
-# directly, so there's no public endpoint on our own site to protect.
-# Queries a real anon-readable table: the /rest/v1/ root returns 401 for
-# publishable keys.
+# Free-tier Supabase projects pause after a week without enough database
+# activity. A read-only COUNT(*) via PostgREST did not prevent a pause, so this
+# calls the keep_alive_ping() RPC, which writes a heartbeat row (see
+# supabase/migrations/20261023000000_keep_alive_heartbeat.sql). It uses only the
+# public URL and publishable key; no service-role key is stored in GitHub.
 on:
   schedule:
-    - cron: "0 12 */5 * *"
+    # Daily, so one skipped or delayed scheduled run can't open a 7-day gap.
+    - cron: "0 12 * * *"
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST endpoint
+      - name: Write Supabase heartbeat
         run: |
-          # Prefer: count=exact makes PostgREST run a real COUNT(*) query
-          # against Postgres, so the ping is database activity rather than
-          # just an API-layer hit.
-          status=$(curl -s -o response.txt -w '%{http_code}' \
+          status=$(curl -s -o response.txt -w '%{http_code}' -X POST \
             -H "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}" \
-            -H "Prefer: count=exact" \
-            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/medication_catalog?select=display_name&limit=1")
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/rpc/keep_alive_ping")
           echo "Supabase responded with HTTP $status"
           cat response.txt
           if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
