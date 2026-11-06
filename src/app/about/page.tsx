@@ -12,7 +12,7 @@ const values = [
     title: "Consent first",
     description: "Every contribution is opt-in. Nothing is required to donate data.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path
           d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 3.5 0 6 3.5 4 7.5C19 16.65 12 21 12 21z"
           stroke="#112845"
@@ -26,7 +26,7 @@ const values = [
     title: "Privacy by default",
     description: "Identifying details are removed before your data reaches a researcher.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="#FF9500" strokeWidth="1.6" />
       </svg>
     ),
@@ -37,7 +37,7 @@ const values = [
     description:
       "Handwritten notes, PDFs, spreadsheets, even AI chat exports — with an account, we organize whatever you already have into one view, ready to donate.",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path d="M12 3 3 8l9 5 9-5-9-5z" stroke="#112845" strokeWidth="1.6" strokeLinejoin="round" />
         <path d="M3 12l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M3 16l9 5 9-5" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -99,7 +99,7 @@ export default function AboutPage() {
 
           <div className={styles.teamNote}>
             <div className={styles.teamNoteIcon}>
-              <svg viewBox="0 0 24 24" fill="none">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
                 <circle cx="12" cy="12" r="9" stroke="#FF9500" strokeWidth="1.6" />
                 <path d="M12 11v5.5" stroke="#FF9500" strokeWidth="1.6" strokeLinecap="round" />
                 <circle cx="12" cy="7.75" r="1" fill="#FF9500" />

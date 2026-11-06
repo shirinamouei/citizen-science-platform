@@ -52,9 +52,14 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${halant.variable} ${oxygen.variable}`}>
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <AuthProvider>
           <Header />
-          {children}
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
           <Footer />
         </AuthProvider>
       </body>

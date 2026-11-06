@@ -24,6 +24,7 @@ export default function WalkthroughAnimation({
     playTokens: steps.map((_, i) => (i === 0 ? 1 : 0)),
   }));
   const [paused, setPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const reducedMotionRef = useRef(false);
 
   const goToPhase = (index: number) => {
@@ -38,12 +39,12 @@ export default function WalkthroughAnimation({
   }, []);
 
   useEffect(() => {
-    if (paused || reducedMotionRef.current) return;
+    if (paused || userPaused || reducedMotionRef.current) return;
     const id = setInterval(() => {
       goToPhase((activeIndex + 1) % steps.length);
     }, PHASE_DURATION);
     return () => clearInterval(id);
-  }, [paused, activeIndex, steps.length]);
+  }, [paused, userPaused, activeIndex, steps.length]);
 
   const handleDotEnter = (index: number) => {
     setPaused(true);
@@ -54,6 +55,7 @@ export default function WalkthroughAnimation({
   return (
     <div
       className={styles.walkthrough}
+      role="group"
       aria-label="Animated walkthrough: log a dose, upload it securely, anonymize it, and it joins the dataset"
     >
       <div className={styles.walkthroughStage} aria-hidden="true">
@@ -92,7 +94,7 @@ export default function WalkthroughAnimation({
               <div className={styles.journalSnippet}>Day 12 of taper — 37.5mg dose today. Mild dizziness this morning...</div>
             </div>
             <div className={`btn btn-primary ${styles.mockUploadBtn}`}>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true" focusable="false">
                 <path d="M12 3v9m0-9l-3.5 3.5M12 3l3.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5 15v3a2 2 0 002 2h10a2 2 0 002-2v-3" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -108,7 +110,7 @@ export default function WalkthroughAnimation({
         <div className={`${styles.phase} ${activeIndex === 2 ? styles.phaseActive : ""}`}>
           <div key={`anon-${playTokens[2]}`} style={{ display: "contents" }}>
             <div className={styles.checkBadge}>
-              <svg viewBox="0 0 24 24" width="42" height="42" fill="none">
+              <svg viewBox="0 0 24 24" width="42" height="42" fill="none" aria-hidden="true" focusable="false">
                 <path d="M6 12.5l4 4 8-9" stroke="#1a7f4a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
@@ -136,10 +138,10 @@ export default function WalkthroughAnimation({
             key={step.title}
             className={`${styles.captionItem} ${index === activeIndex ? styles.captionItemActive : ""}`}
           >
-            <h3>
-              <span className={styles.captionStepNum}>{index + 1}</span>
+            <p className={styles.captionTitle}>
+              <span className={styles.captionStepNum} aria-hidden="true">{index + 1}</span>
               {step.title}
-            </h3>
+            </p>
             <p>{step.description}</p>
           </div>
         ))}
@@ -152,6 +154,7 @@ export default function WalkthroughAnimation({
             type="button"
             className={`${styles.dot} ${index === activeIndex ? styles.dotActive : ""}`}
             aria-label={`Show step ${index + 1}: ${step.title}`}
+            aria-pressed={index === activeIndex}
             onMouseEnter={() => handleDotEnter(index)}
             onMouseLeave={handleDotLeave}
             onFocus={() => handleDotEnter(index)}
@@ -159,6 +162,15 @@ export default function WalkthroughAnimation({
           ></button>
         ))}
       </div>
+
+      <button
+        type="button"
+        className={styles.pauseBtn}
+        aria-pressed={userPaused}
+        onClick={() => setUserPaused((p) => !p)}
+      >
+        {userPaused ? "Play animation" : "Pause animation"}
+      </button>
     </div>
   );
 }

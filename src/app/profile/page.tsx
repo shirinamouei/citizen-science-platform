@@ -33,7 +33,7 @@ function buildStats(totalUploads: number, lastUpload: string) {
       value: String(totalUploads),
       label: "Total uploads",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
           <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#112845" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       ),
@@ -43,7 +43,7 @@ function buildStats(totalUploads: number, lastUpload: string) {
       value: lastUpload,
       label: "Last upload",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
           <rect x="3" y="4" width="18" height="16" rx="2" stroke="#112845" strokeWidth="1.6" />
           <path d="M3 9h18" stroke="#112845" strokeWidth="1.6" />
         </svg>
@@ -54,9 +54,9 @@ function buildStats(totalUploads: number, lastUpload: string) {
       value: "100%",
       label: "Anonymized & synced",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M9 12l2 2 4-4" stroke="#1a7f4a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="12" cy="12" r="9" stroke="#1a7f4a" strokeWidth="1.4" />
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M9 12l2 2 4-4" stroke="#146c3b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="9" stroke="#146c3b" strokeWidth="1.4" />
         </svg>
       ),
     },
@@ -97,10 +97,13 @@ function StatCard({
 
 function Milestone({ label, done }: { label: string; done: boolean }) {
   return (
-    <div className={`${styles.milestone} ${done ? styles.milestoneDone : ""}`}>
-      <div className={styles.dot}></div>
-      <span>{label}</span>
-    </div>
+    <li className={`${styles.milestone} ${done ? styles.milestoneDone : ""}`}>
+      <span className={styles.dot} aria-hidden="true"></span>
+      <span>
+        {label}
+        <span className="sr-only">{done ? " (completed)" : " (not yet reached)"}</span>
+      </span>
+    </li>
   );
 }
 
@@ -119,24 +122,24 @@ export default function ProfilePage() {
         <section className={styles.profileHero}>
           <div className="wrap">
             <div className={styles.profileHeader}>
-              <div className={styles.avatar}>
+              <div className={styles.avatar} aria-hidden="true">
                 {isSignedIn && displayName ? (
                   displayName[0].toUpperCase()
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" width="28" height="28">
+                  <svg viewBox="0 0 24 24" fill="none" width="28" height="28" aria-hidden="true" focusable="false">
                     <circle cx="12" cy="8" r="4" stroke="#112845" strokeWidth="1.6" />
                     <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
                 )}
               </div>
               <div>
-                <div className={styles.profileName}>
-                  {isSignedIn && displayName ? displayName : "Guest"}{" "}
+                <div className={styles.profileNameRow}>
+                  <h1 className={styles.profileName}>{isSignedIn && displayName ? displayName : "Guest"}</h1>
                   {isGuest && (
                     <span className="guest-pill" style={{ display: "inline-flex" }}>
-                      <svg viewBox="0 0 24 24" fill="none" width="12" height="12">
-                        <path d="M12 9v4M12 16.5v.01" stroke="#b8690a" strokeWidth="2" strokeLinecap="round" />
-                        <circle cx="12" cy="12" r="9" stroke="#b8690a" strokeWidth="1.4" />
+                      <svg viewBox="0 0 24 24" fill="none" width="12" height="12" aria-hidden="true" focusable="false">
+                        <path d="M12 9v4M12 16.5v.01" stroke="#8f4a00" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="12" cy="12" r="9" stroke="#8f4a00" strokeWidth="1.4" />
                       </svg>
                       Guest, information not saved
                     </span>
@@ -173,7 +176,7 @@ export default function ProfilePage() {
             <div className={styles.chartSection}>
               <div className={`card ${styles.chartCard}`}>
                 <div className={styles.chartCardHead}>
-                  <h3>Your contributions over time</h3>
+                  <h2 className="heading-sm">Your contributions over time</h2>
                 </div>
                 {uploads.length > 0 ? (
                   <div className={styles.chartCanvas}>
@@ -181,8 +184,8 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className={styles.chartEmpty}>
-                    <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                      <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#a9b4c9" strokeWidth="1.8" strokeLinecap="round" />
+                    <svg viewBox="0 0 24 24" fill="none" width="32" height="32" aria-hidden="true" focusable="false">
+                      <path d="M4 19V10M9 19V5M14 19v-7M19 19V8" stroke="#6f7f9b" strokeWidth="1.8" strokeLinecap="round" />
                     </svg>
                     <strong>No contributions yet</strong>
                     <span>Upload your first entry to start tracking your progress here.</span>
@@ -192,7 +195,7 @@ export default function ProfilePage() {
 
               <div className={`card ${styles.streakCard}`}>
                 <div className={styles.streakFlame}>
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true" focusable="false">
                     <path
                       d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
                       stroke="white"
@@ -202,26 +205,32 @@ export default function ProfilePage() {
                     />
                   </svg>
                 </div>
-                <h3>Milestones</h3>
-                {milestones.map((milestone) => (
-                  <Milestone key={milestone.label} {...milestone} />
-                ))}
+                <h2 className="heading-sm">Milestones</h2>
+                <ul className={styles.milestoneList}>
+                  {milestones.map((milestone) => (
+                    <Milestone key={milestone.label} {...milestone} />
+                  ))}
+                </ul>
               </div>
             </div>
 
             <div className={`card ${styles.historyCard}`}>
-              <h3 className="mb-16">Upload history</h3>
+              <h2 className="heading-sm mb-16">Upload history</h2>
               {uploads.length > 0 ? (
-                <div className={styles.tableScroll}>
+                <div className={styles.tableScroll} role="region" aria-label="Upload history table" tabIndex={0}>
                   <table className={styles.history}>
                     <thead>
                       <tr>
-                        <th>Date</th>
-                        <th>Medication</th>
-                        <th>Dose</th>
-                        <th>Notes</th>
-                        <th>Status</th>
-                        {isSignedIn && <th></th>}
+                        <th scope="col">Date</th>
+                        <th scope="col">Medication</th>
+                        <th scope="col">Dose</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col">Status</th>
+                        {isSignedIn && (
+                          <th scope="col">
+                            <span className="sr-only">Actions</span>
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -245,6 +254,7 @@ export default function ProfilePage() {
                               <button
                                 type="button"
                                 className={styles.deleteBtn}
+                                aria-label={`Delete entry for ${upload.med} from ${upload.date}`}
                                 onClick={() => {
                                   if (
                                     window.confirm(

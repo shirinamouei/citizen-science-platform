@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -16,6 +16,11 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const uid = useId();
+  const passwordId = `${uid}-password`;
+  const passwordErrorId = `${uid}-password-error`;
+  const confirmId = `${uid}-confirm`;
+  const confirmErrorId = `${uid}-confirm-error`;
 
   const passwordValid = password.length >= MIN_PASSWORD_LENGTH;
   const passwordsMatch = password === confirmPassword;
@@ -57,7 +62,7 @@ export default function ResetPasswordPage() {
 
           <div className={`card ${styles.authCard}`}>
             {loading ? (
-              <p className={styles.authSub}>Checking your reset link…</p>
+              <p className={styles.authSub} role="status">Checking your reset link…</p>
             ) : linkInvalid ? (
               <>
                 <h2>This link is invalid or has expired</h2>
@@ -75,34 +80,48 @@ export default function ResetPasswordPage() {
                 <p className={styles.authSub}>Choose something you haven&apos;t used before.</p>
                 <form onSubmit={handleSubmit}>
                   <div className={styles.field}>
-                    <label>New password</label>
+                    <label htmlFor={passwordId}>New password</label>
                     <input
+                      id={passwordId}
                       type="password"
+                      autoComplete="new-password"
                       placeholder="Create a password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className={password && !passwordValid ? styles.inputError : ""}
+                      aria-invalid={Boolean(password) && !passwordValid}
+                      aria-describedby={password && !passwordValid ? passwordErrorId : undefined}
                     />
                     {password && !passwordValid && (
-                      <p className={styles.errorText}>
+                      <p className={styles.errorText} id={passwordErrorId} role="alert">
                         Password must be at least {MIN_PASSWORD_LENGTH} characters.
                       </p>
                     )}
                   </div>
                   <div className={styles.field}>
-                    <label>Confirm new password</label>
+                    <label htmlFor={confirmId}>Confirm new password</label>
                     <input
+                      id={confirmId}
                       type="password"
+                      autoComplete="new-password"
                       placeholder="Re-enter your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className={confirmPassword && !passwordsMatch ? styles.inputError : ""}
+                      aria-invalid={Boolean(confirmPassword) && !passwordsMatch}
+                      aria-describedby={confirmPassword && !passwordsMatch ? confirmErrorId : undefined}
                     />
                     {confirmPassword && !passwordsMatch && (
-                      <p className={styles.errorText}>Passwords don&apos;t match.</p>
+                      <p className={styles.errorText} id={confirmErrorId} role="alert">
+                        Passwords don&apos;t match.
+                      </p>
                     )}
                   </div>
-                  {error && <p className={styles.errorText}>{error}</p>}
+                  {error && (
+                    <p className={styles.errorText} role="alert">
+                      {error}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     className="btn btn-primary"

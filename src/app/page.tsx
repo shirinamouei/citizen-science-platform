@@ -116,7 +116,7 @@ export default function Home() {
           <div className={styles.accessGrid}>
             <div className={`card ${styles.accessCard}`}>
               <div className={styles.accessIcon} style={{ background: "var(--lavender)" }}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true" focusable="false">
                   <circle cx="12" cy="8" r="4" stroke="#112845" strokeWidth="1.6" />
                   <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="#112845" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -132,7 +132,7 @@ export default function Home() {
             </div>
             <div className={`card ${styles.accessCard}`}>
               <div className={styles.accessIcon} style={{ background: "#fff3e0" }}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true" focusable="false">
                   <path d="M12 5c-5 0-8 4-8 4s3 4 8 4 8-4 8-4-3-4-8-4z" stroke="#FF9500" strokeWidth="1.6" strokeLinejoin="round" />
                   <circle cx="12" cy="9" r="2" stroke="#FF9500" strokeWidth="1.6" />
                 </svg>

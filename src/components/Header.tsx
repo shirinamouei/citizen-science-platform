@@ -21,9 +21,18 @@ export default function Header() {
     setIsMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMenuOpen]);
+
   return (
     <header className="site-header">
-      <nav className="nav">
+      <nav className="nav" aria-label="Main">
         <Link href="/" className="brand">
           <BrandMark />
           Cascade
@@ -31,19 +40,24 @@ export default function Header() {
         <button
           type="button"
           className="menu-toggle"
-          aria-label="Toggle menu"
+          aria-label="Menu"
           aria-expanded={isMenuOpen}
+          aria-controls="site-menu"
           onClick={() => setIsMenuOpen((open) => !open)}
         >
-          <span />
-          <span />
-          <span />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
         </button>
-        <div className={`nav-right ${isMenuOpen ? "nav-right-open" : ""}`}>
+        <div id="site-menu" className={`nav-right ${isMenuOpen ? "nav-right-open" : ""}`}>
           <ul className="nav-links">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className={pathname === link.href ? "active" : ""}>
+                <Link
+                  href={link.href}
+                  className={pathname === link.href ? "active" : ""}
+                  aria-current={pathname === link.href ? "page" : undefined}
+                >
                   {link.label}
                 </Link>
               </li>

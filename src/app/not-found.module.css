@@ -19,10 +19,7 @@
   line-height: 1;
   letter-spacing: -0.02em;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--orange), var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--orange-text);
 }
 
 .notFoundInner h1 {

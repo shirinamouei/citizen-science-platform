@@ -14,8 +14,14 @@
   --bg: #FAFBFF;
   --white: #FFFFFF;
   --text: #16233a;
-  --text-muted: #5b6b85;
+  --text-muted: #4b5b76;
+  /* Orange is too light for text on light backgrounds (2.1:1); this darker
+     shade clears 4.5:1 on every surface it's used on. */
+  --orange-text: #8f4a00;
+  --green-text: #146c3b;
   --border: #e3e9f7;
+  /* Visible boundary for form controls (WCAG 1.4.11 needs 3:1 on white). */
+  --border-strong: #6f7f9b;
   --radius: 14px;
   --radius-sm: 8px;
   --shadow: 0 4px 20px rgba(17, 40, 69, 0.06);
@@ -41,6 +47,53 @@ body {
 
 input, select, textarea, button {
   max-width: 100%;
+}
+
+::placeholder { color: var(--text-muted); opacity: 1; }
+
+/* Visible keyboard focus everywhere; component CSS must not remove it. */
+:focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 2px;
+}
+.site-footer :focus-visible { outline-color: var(--gold); }
+
+/* Visually hidden but available to assistive tech. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+#main-content:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 a { color: inherit; text-decoration: none; }
@@ -154,8 +207,8 @@ button { font-family: inherit; }
   padding: 9px 18px;
   border-radius: 999px;
   background: var(--orange);
-  color: var(--white) !important;
-  font-weight: 600;
+  color: var(--navy) !important;
+  font-weight: 700;
   font-size: 14.5px;
   box-shadow: 0 2px 10px rgba(255, 149, 0, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -173,7 +226,7 @@ button { font-family: inherit; }
   font-size: 12px;
   font-weight: 600;
   background: #fff3e0;
-  color: #b8690a;
+  color: var(--orange-text);
 }
 
 /* ---------- Buttons ---------- */
@@ -193,7 +246,7 @@ button { font-family: inherit; }
 
 .btn-primary {
   background: var(--orange);
-  color: var(--white);
+  color: var(--navy);
   box-shadow: 0 4px 16px rgba(255, 149, 0, 0.35);
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255, 149, 0, 0.4); }
@@ -234,7 +287,7 @@ section { padding: 88px 0; }
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--orange);
+  color: var(--orange-text);
   margin-bottom: 14px;
 }
 
@@ -250,6 +303,8 @@ h1, h2, h3 { font-family: var(--font-halant), Georgia, serif; font-weight: 500; 
 h1 { font-size: 60px; letter-spacing: -0.02em; color: var(--navy); line-height: 1.1; }
 h2 { font-size: 34px; letter-spacing: -0.015em; color: var(--navy); line-height: 1.15; font-weight: 700; }
 h3 { font-size: 20px; color: var(--navy); }
+/* h3-sized heading for use at other levels without skipping the outline. */
+.heading-sm { font-size: 20px; font-weight: 500; letter-spacing: normal; line-height: 1.55; }
 p.lede { font-size: 18px; color: var(--text-muted); max-width: 560px; }
 
 .card {
@@ -287,9 +342,12 @@ p.lede { font-size: 18px; color: var(--text-muted); max-width: 560px; }
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
 
-.footer-grid h4 {
+.footer-grid h2 {
+  font-family: inherit;
   color: var(--white);
   font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: normal;
   margin-bottom: 14px;
   font-weight: 700;
 }
@@ -297,11 +355,12 @@ p.lede { font-size: 18px; color: var(--text-muted); max-width: 560px; }
 .footer-grid a, .footer-grid p {
   display: block;
   font-size: 14px;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.8);
   margin-bottom: 9px;
 }
 
-.footer-grid a:hover { color: var(--gold); }
+.footer-grid a { text-decoration: underline; text-decoration-color: transparent; }
+.footer-grid a:hover { color: var(--gold); text-decoration-color: currentColor; }
 
 .footer-bottom {
   display: flex;
@@ -309,7 +368,7 @@ p.lede { font-size: 18px; color: var(--text-muted); max-width: 560px; }
   align-items: center;
   padding-top: 22px;
   font-size: 13px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.75);
 }
 
 .footer-brand {
@@ -349,12 +408,16 @@ p.lede { font-size: 18px; color: var(--text-muted); max-width: 560px; }
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease;
+    /* Hidden menus must also leave the tab order and accessibility tree. */
+    visibility: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease, visibility 0s linear 0.25s;
   }
 
   .nav-right-open {
     max-height: 400px;
     opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   .nav-links {

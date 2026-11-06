@@ -11,7 +11,7 @@
   width: 100%;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--border-strong);
   background: var(--white);
   font-size: 14.5px;
   font-family: inherit;
@@ -19,8 +19,9 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .field input[type="text"]:focus {
-  outline: none;
-  border-color: var(--blue);
+  outline: 2px solid var(--navy);
+  outline-offset: 1px;
+  border-color: var(--navy);
   box-shadow: 0 0 0 4px rgba(152, 189, 224, 0.28);
 }
 

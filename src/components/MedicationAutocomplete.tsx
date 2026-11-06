@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useMedicationCatalog } from "@/lib/medication-catalog";
 import styles from "./MedicationAutocomplete.module.css";
 
@@ -20,12 +20,17 @@ export function MedicationAutocomplete({
   required?: boolean;
 }) {
   const catalog = useMedicationCatalog();
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const listId = `${inputId}-listbox`;
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
 
   const query = value.trim().toLowerCase();
   const matches = query === "" ? [] : catalog.filter((m) => m.toLowerCase().includes(query)).slice(0, 6);
+
+  const expanded = open && matches.length > 0;
 
   function choose(option: string) {
     setValue(option);
@@ -34,12 +39,17 @@ export function MedicationAutocomplete({
 
   return (
     <div className={styles.field}>
-      <label htmlFor={id}>
+      <label htmlFor={inputId}>
         {label} {hint && <span className={styles.hint}>{hint}</span>}
       </label>
       <input
-        id={id}
+        id={inputId}
         type="text"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={expanded}
+        aria-controls={listId}
+        aria-activedescendant={expanded ? `${inputId}-option-${highlight}` : undefined}
         name={name}
         autoComplete="off"
         placeholder={placeholder}
@@ -69,11 +79,17 @@ export function MedicationAutocomplete({
           }
         }}
       />
-      {open && matches.length > 0 && (
-        <ul className={styles.list}>
+      <p className="sr-only" role="status">
+        {expanded ? `${matches.length} ${matches.length === 1 ? "suggestion" : "suggestions"} available. Use up and down arrows to review.` : ""}
+      </p>
+      {expanded && (
+        <ul className={styles.list} id={listId} role="listbox" aria-label={`${label} suggestions`}>
           {matches.map((option, i) => (
             <li
               key={option}
+              id={`${inputId}-option-${i}`}
+              role="option"
+              aria-selected={i === highlight}
               className={`${styles.item} ${i === highlight ? styles.itemActive : ""}`}
               onMouseDown={() => choose(option)}
             >

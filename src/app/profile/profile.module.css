@@ -15,7 +15,11 @@
   font-weight: 800; font-size: 22px; color: var(--navy);
   flex-shrink: 0;
 }
-.profileName { font-size: 22px; font-weight: 800; color: var(--navy); }
+.profileNameRow { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.profileName {
+  font-family: var(--font-oxygen), Helvetica, Arial, sans-serif;
+  font-size: 22px; font-weight: 800; line-height: 1.55; letter-spacing: normal; color: var(--navy);
+}
 .profileSub { font-size: 13.5px; color: var(--text-muted); margin-top: 3px; }
 
 .statRow {
@@ -59,9 +63,10 @@
   background: linear-gradient(135deg, var(--orange), var(--gold));
   display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
 }
+.milestoneList { list-style: none; }
 .milestone { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
-.milestone .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
-.milestoneDone .dot { background: var(--orange); }
+.milestone .dot { width: 10px; height: 10px; border-radius: 50%; background: transparent; border: 2px solid var(--border-strong); flex-shrink: 0; }
+.milestoneDone .dot { background: var(--orange-text); border-color: var(--orange-text); }
 .milestone span { font-size: 13.5px; color: var(--text-muted); }
 .milestoneDone span { color: var(--navy); font-weight: 600; }
 
@@ -76,8 +81,8 @@
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
 }
-.statusChipSynced { background: #e6f6ec; color: #1a7f4a; }
-.statusChipPending { background: #fff3e0; color: #b8690a; }
+.statusChipSynced { background: #e6f6ec; color: var(--green-text); }
+.statusChipPending { background: #fff3e0; color: var(--orange-text); }
 
 .historyEmpty {
   padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 13.5px;

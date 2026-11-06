@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
       <section className="section-tight" style={{ paddingTop: "32px" }}>
         <div className={`wrap ${styles.legalLayout}`}>
-          <aside className={styles.toc}>
+          <nav className={styles.toc} aria-label="On this page">
             <div className={`card ${styles.tocCard}`}>
               <a href="#what-we-collect">What we collect</a>
               <a href="#why">Why we collect it</a>
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
               <a href="#control">Your controls</a>
               <a href="#rights">Your rights</a>
             </div>
-          </aside>
+          </nav>
 
           <div className={styles.legalBody}>
             <span className={`pill ${styles.updatedPill}`}>Last updated July 2026</span>
@@ -45,13 +45,13 @@ export default function PrivacyPage() {
               notes about symptoms or experience. If you upload a file, we extract only the
               relevant tapering fields from it.
             </p>
-            <div className={styles.tableScroll}>
+            <div className={styles.tableScroll} role="region" aria-label="What data we collect" tabIndex={0}>
               <table className={styles.dataTable}>
                 <thead>
                   <tr>
-                    <th>Data type</th>
-                    <th>Collected?</th>
-                    <th>Linked to your identity?</th>
+                    <th scope="col">Data type</th>
+                    <th scope="col">Collected?</th>
+                    <th scope="col">Linked to your identity?</th>
                   </tr>
                 </thead>
                 <tbody>

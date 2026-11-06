@@ -12,7 +12,7 @@ import { Turnstile } from "@/components/Turnstile";
 import styles from "./upload.module.css";
 
 const checkIcon = (
-  <svg viewBox="0 0 24 24" fill="none">
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
     <path d="M9 12l2 2 4-4" stroke="#FF9500" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     <circle cx="12" cy="12" r="9" stroke="#112845" strokeWidth="1.5" />
   </svg>
@@ -36,11 +36,18 @@ function MedicationEntryFields({
   onRemove: () => void;
 }) {
   return (
-    <div className={styles.medicationEntry}>
+    <div className={styles.medicationEntry} role="group" aria-labelledby={`med-heading-${id}`}>
       <div className={styles.medicationEntryHead}>
-        <span className={styles.medicationBadge}>Medication {index + 1}</span>
+        <span className={styles.medicationBadge} id={`med-heading-${id}`}>
+          Medication {index + 1}
+        </span>
         {showRemove && (
-          <button type="button" className={styles.removeMedBtn} onClick={onRemove}>
+          <button
+            type="button"
+            className={styles.removeMedBtn}
+            onClick={onRemove}
+            aria-label={`Remove medication ${index + 1}`}
+          >
             Remove
           </button>
         )}
@@ -54,36 +61,30 @@ function MedicationEntryFields({
           required
         />
         <div className={styles.field}>
-          <label>
-            Starting dose 
-          </label>
+          <label htmlFor={`med-dose-${id}`}>Starting dose (mg)</label>
           <div className={styles.doseInputWrap}>
-            <input type="number" name={`med-dose-${id}`} placeholder="e.g. 100" required />
-            <span className={styles.doseUnit}>mg</span>
+            <input type="number" id={`med-dose-${id}`} name={`med-dose-${id}`} placeholder="e.g. 100" required />
+            <span className={styles.doseUnit} aria-hidden="true">mg</span>
           </div>
         </div>
         <div className={styles.field}>
-          <label>
-            Current dose
-          </label>
+          <label htmlFor={`med-dose-current-${id}`}>Current dose (mg)</label>
           <div className={styles.doseInputWrap}>
-            <input type="number" name={`med-dose-current-${id}`} placeholder="e.g. 75" required />
-            <span className={styles.doseUnit}>mg</span>
+            <input type="number" id={`med-dose-current-${id}`} name={`med-dose-current-${id}`} placeholder="e.g. 75" required />
+            <span className={styles.doseUnit} aria-hidden="true">mg</span>
           </div>
         </div>
       </div>
       <div className={styles.fieldRow}>
         <div className={styles.field}>
-          <label>
-            Taper start date
-          </label>
-          <input type="date" name={`med-taper-start-${id}`} />
+          <label htmlFor={`med-taper-start-${id}`}>Taper start date</label>
+          <input type="date" id={`med-taper-start-${id}`} name={`med-taper-start-${id}`} />
         </div>
         <div className={styles.field}>
-          <label>
+          <label htmlFor={`med-taper-method-${id}`}>
             Taper method <span className={styles.hint}>(current or most recent)</span>
           </label>
-          <select name={`med-taper-method-${id}`} defaultValue="">
+          <select id={`med-taper-method-${id}`} name={`med-taper-method-${id}`} defaultValue="">
             <option value="" disabled>
               Select one
             </option>
@@ -105,6 +106,12 @@ export default function UploadPage() {
   const router = useRouter();
   const { isSignedIn } = useAuth();
   const idBase = useId();
+  const fileInputId = `${idBase}-file`;
+  const fileHintId = `${idBase}-file-hint`;
+  const notesId = `${idBase}-notes`;
+  const dobId = `${idBase}-dob`;
+  const dobErrorId = `${idBase}-dob-error`;
+  const consentId = `${idBase}-consent`;
   const medicationCounter = useRef(0);
   const [medicationIds, setMedicationIds] = useState<string[]>(() => [`${idBase}-0`]);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -197,16 +204,16 @@ export default function UploadPage() {
               }
             }}
           >
-            <label style={{ display: "block", fontSize: "13.5px", fontWeight: 600, color: "var(--navy)", marginBottom: "6px" }}>
+            <p id={`${idBase}-meds-label`} style={{ display: "block", fontSize: "13.5px", fontWeight: 600, color: "var(--navy)", marginBottom: "6px" }}>
               Psychiatric medication(s) you&apos;re currently tapering
-            </label>
+            </p>
             <p className={styles.sectionNote}>
               Please list the name of only one psychiatric medication per entry. If you&apos;re
               tapering more than one at the same time, use &ldquo;+ Add another medication&rdquo;
               below for each additional one.
             </p>
 
-            <div>
+            <div role="group" aria-labelledby={`${idBase}-meds-label`}>
               {medicationIds.map((id, index) => (
                 <MedicationEntryFields
                   key={id}
@@ -222,40 +229,50 @@ export default function UploadPage() {
             </button>
 
             <div className={styles.field}>
-              <label>
+              <label htmlFor={notesId}>
                 Symptoms / notes <span className={styles.hint}>(optional)</span>
               </label>
-              <textarea name="notes" placeholder="Anything you noticed during this period..." />
+              <textarea id={notesId} name="notes" placeholder="Anything you noticed during this period..." />
             </div>
 
             <div className={styles.field}>
-              <label>
+              <p className={styles.fieldLabel} id={`${fileInputId}-label`}>
                 Attach a file <span className={styles.hint}>(optional)</span>
-              </label>
-              <div
+              </p>
+              <label
+                htmlFor={fileInputId}
                 className={styles.dropzone}
-                onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
                   handleFileSelected(e.dataTransfer.files[0] ?? null);
                 }}
               >
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                   <path d="M12 15V4M12 4L7 9M12 4l5 5" stroke="#112845" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="#112845" strokeWidth="1.7" strokeLinecap="round" />
                 </svg>
                 <strong>{attachment ? attachment.file.name : "Drop a file here or click to browse"}</strong>
-                <span>{validatingFile ? "Checking file…" : "CSV, XLSX, PDF, PNG, or JPG, up to 3MB"}</span>
+                <span id={fileHintId}>{validatingFile ? "Checking file…" : "CSV, XLSX, PDF, PNG, or JPG, up to 3MB"}</span>
                 <input
                   ref={fileInputRef}
+                  id={fileInputId}
                   type="file"
                   accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg"
-                  style={{ display: "none" }}
+                  className="sr-only"
+                  aria-labelledby={`${fileInputId}-label`}
+                  aria-describedby={fileHintId}
                   onChange={(e) => handleFileSelected(e.target.files?.[0] ?? null)}
                 />
-              </div>
-              {fileError && <p className={styles.errorText}>{fileError}</p>}
+              </label>
+              <p className="sr-only" role="status">
+                {attachment && !fileError ? `Selected file: ${attachment.file.name}` : ""}
+              </p>
+              {fileError && (
+                <p className={styles.errorText} role="alert">
+                  {fileError}
+                </p>
+              )}
               {attachment && !fileError && (
                 <button
                   type="button"
@@ -273,22 +290,30 @@ export default function UploadPage() {
 
             {!isSignedIn && (
               <div className={styles.field}>
-                <label>
+                <label htmlFor={dobId}>
                   Date of birth <span className={styles.hint}>(confirms you&apos;re 18 or older, not linked to your entry)</span>
                 </label>
                 <input
+                  id={dobId}
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
                   className={underage ? styles.inputError : ""}
+                  autoComplete="bday"
+                  aria-invalid={underage}
+                  aria-describedby={underage ? dobErrorId : undefined}
                   required
                 />
-                {underage && <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>}
+                {underage && (
+                  <p className={styles.errorText} id={dobErrorId} role="alert">
+                    {MINIMUM_AGE_DISCLAIMER}
+                  </p>
+                )}
               </div>
             )}
 
-            <div className={styles.consentBox}>
-              <input type="checkbox" required />
+            <label className={styles.consentBox} htmlFor={consentId}>
+              <input id={consentId} type="checkbox" required />
               <span>
                 I understand my data will be anonymized and used in aggregate for research
                 purposes, per the{" "}
@@ -297,7 +322,7 @@ export default function UploadPage() {
                 </Link>
                 . I can request deletion at any time.
               </span>
-            </div>
+            </label>
 
             <div className="mt-24">
               <Turnstile onVerify={setTurnstileToken} />
@@ -313,15 +338,15 @@ export default function UploadPage() {
               </button>
             </div>
             {submitError && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b3261e", fontSize: "14px", fontWeight: 600 }}>
+              <div role="alert" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", color: "#b3261e", fontSize: "14px", fontWeight: 600 }}>
                 {submitError}
               </div>
             )}
           </form>
 
-          <aside>
+          <section aria-labelledby={`${idBase}-side-heading`}>
             <div className={`card ${styles.sideCard}`}>
-              <h3>What happens to this?</h3>
+              <h2 className="heading-sm" id={`${idBase}-side-heading`}>What happens to this?</h2>
               <p>Your name and contact details are never linked to your tapering data once submitted.</p>
               <ul className={styles.miniList}>
                 {dataHandlingPoints.map((point) => (
@@ -336,7 +361,7 @@ export default function UploadPage() {
                 any research already conducted using that data.
               </p>
             </div>
-          </aside>
+          </section>
         </div>
       </section>
     </main>

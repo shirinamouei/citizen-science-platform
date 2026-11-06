@@ -12,8 +12,9 @@ export default function QrDownload() {
         fgColor="#112845"
         bgColor="#ffffff"
         level="M"
+        title="QR code that opens the Cascade app download page"
       />
-      <span>SCAN TO DOWNLOAD</span>
+      <span>Scan to download</span>
     </div>
   );
 }

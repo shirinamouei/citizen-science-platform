@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -55,7 +55,7 @@ function getEmailDomain(email: string) {
 
 function EyeIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+    <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
       <path
         d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"
         stroke="currentColor"
@@ -70,7 +70,7 @@ function EyeIcon() {
 
 function EyeOffIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+    <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
       <path
         d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"
         stroke="currentColor"
@@ -88,10 +88,18 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = ((step + 1) / total) * 100;
   return (
     <div className={styles.progressWrap}>
-      <div className={styles.progressBarTrack}>
+      <div
+        className={styles.progressBarTrack}
+        role="progressbar"
+        aria-label="Account setup progress"
+        aria-valuemin={1}
+        aria-valuemax={total}
+        aria-valuenow={step + 1}
+        aria-valuetext={`Step ${step + 1} of ${total}`}
+      >
         <div className={styles.progressBarFill} style={{ width: `${pct}%` }} />
       </div>
-      <div className={styles.progressLabel}>
+      <div className={styles.progressLabel} aria-live="polite">
         Step {step + 1} of {total}
       </div>
     </div>
@@ -105,6 +113,7 @@ function SegmentedYesNo() {
       <button
         type="button"
         className={`${styles.segBtn} ${value === "yes" ? styles.segBtnActive : ""}`}
+        aria-pressed={value === "yes"}
         onClick={() => setValue("yes")}
       >
         Yes
@@ -112,6 +121,7 @@ function SegmentedYesNo() {
       <button
         type="button"
         className={`${styles.segBtn} ${value === "no" ? styles.segBtnActive : ""}`}
+        aria-pressed={value === "no"}
         onClick={() => setValue("no")}
       >
         No
@@ -129,12 +139,13 @@ function SelectField({
   hint?: string;
   options: string[];
 }) {
+  const id = useId();
   return (
     <div className={styles.field}>
-      <label>
+      <label htmlFor={id}>
         {label} {hint && <span className={styles.hint}>{hint}</span>}
       </label>
-      <select defaultValue="">
+      <select id={id} defaultValue="">
         <option value="" disabled>
           Select one
         </option>
@@ -156,8 +167,8 @@ function MultiSelectQuestion({
   options: string[];
 }) {
   return (
-    <div className={styles.surveyQ}>
-      <label className={styles.surveyLabel}>{label}</label>
+    <fieldset className={styles.surveyQ}>
+      <legend className={styles.surveyLabel}>{label}</legend>
       {hint && <span className={styles.surveyHint}>{hint}</span>}
       <div className={styles.checkboxGroup}>
         {options.map((option) => (
@@ -167,7 +178,7 @@ function MultiSelectQuestion({
           </label>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -207,18 +218,19 @@ const NOT_LISTED_CATEGORY = "Not listed above";
 function PrescribedConditionQuestion() {
   const [category, setCategory] = useState("");
   const group = PRESCRIBED_CONDITION_GROUPS.find((g) => g.category === category);
+  const selectId = useId();
 
   return (
-    <div className={styles.surveyQ}>
-      <label className={styles.surveyLabel}>
+    <fieldset className={styles.surveyQ}>
+      <legend className={styles.surveyLabel}>
         What condition(s) were you originally prescribed this medication for?
-      </label>
+      </legend>
       <span className={styles.surveyHint}>Select all that apply</span>
 
       <div className={styles.conditionGroups}>
         <div className={styles.field}>
-          <label>Condition category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <label htmlFor={selectId}>Condition category</label>
+          <select id={selectId} value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="" disabled>
               Select one
             </option>
@@ -243,10 +255,15 @@ function PrescribedConditionQuestion() {
         )}
 
         {category === NOT_LISTED_CATEGORY && (
-          <input type="text" className={styles.otherInput} placeholder="Please specify" />
+          <input
+            type="text"
+            className={styles.otherInput}
+            placeholder="Please specify"
+            aria-label="Please specify the condition"
+          />
         )}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -254,6 +271,21 @@ export default function SignInPage() {
   const router = useRouter();
   const { signInWithPassword, signUp } = useAuth();
   const [tab, setTab] = useState<"signin" | "create">("signin");
+  const uid = useId();
+  const ids = {
+    signInEmail: `${uid}-signin-email`,
+    signInPassword: `${uid}-signin-password`,
+    email: `${uid}-email`,
+    emailError: `${uid}-email-error`,
+    name: `${uid}-name`,
+    nameError: `${uid}-name-error`,
+    password: `${uid}-password`,
+    passwordError: `${uid}-password-error`,
+    passwordHint: `${uid}-password-hint`,
+    dob: `${uid}-dob`,
+    dobError: `${uid}-dob-error`,
+    consent: `${uid}-consent`,
+  };
 
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
@@ -287,7 +319,8 @@ export default function SignInPage() {
       hasMountedStep.current = true;
       return;
     }
-    cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    cardRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }, [step]);
 
   const trimmedEmail = email.trim();
@@ -399,10 +432,11 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <div className={styles.authTabs}>
+          <div className={styles.authTabs} role="group" aria-label="Sign in or create an account">
             <button
               type="button"
               className={tab === "signin" ? styles.active : ""}
+              aria-pressed={tab === "signin"}
               onClick={() => setTab("signin")}
             >
               Sign In
@@ -410,6 +444,7 @@ export default function SignInPage() {
             <button
               type="button"
               className={tab === "create" ? styles.active : ""}
+              aria-pressed={tab === "create"}
               onClick={() => setTab("create")}
             >
               Create Account
@@ -423,12 +458,26 @@ export default function SignInPage() {
 
               <form onSubmit={handleSubmit}>
                 <div className={styles.field}>
-                  <label>Email</label>
-                  <input type="email" name="email" placeholder="you@example.com" required />
+                  <label htmlFor={ids.signInEmail}>Email</label>
+                  <input
+                    id={ids.signInEmail}
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    required
+                  />
                 </div>
                 <div className={styles.field}>
-                  <label>Password</label>
-                  <input type="password" name="password" placeholder="••••••••" required />
+                  <label htmlFor={ids.signInPassword}>Password</label>
+                  <input
+                    id={ids.signInPassword}
+                    type="password"
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    required
+                  />
                 </div>
                 <Link href="/forgot-password" className={styles.forgotLink}>
                   Forgot password?
@@ -436,7 +485,11 @@ export default function SignInPage() {
                 <div className="mt-16">
                   <Turnstile onVerify={setSignInTurnstileToken} />
                 </div>
-                {signInError && <p className={styles.errorText}>{signInError}</p>}
+                {signInError && (
+                  <p className={styles.errorText} role="alert">
+                    {signInError}
+                  </p>
+                )}
                 <button
                   type="submit"
                   className="btn btn-primary"
@@ -449,15 +502,9 @@ export default function SignInPage() {
 
               <div className={styles.authFooterLink}>
                 New to Cascade?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setTab("create");
-                  }}
-                >
+                <button type="button" onClick={() => setTab("create")}>
                   Create an account
-                </a>
+                </button>
               </div>
               <div className={styles.guestInline}>
                 <Link href="/upload" className="btn btn-secondary btn-sm">
@@ -485,7 +532,7 @@ export default function SignInPage() {
               <ProgressBar step={step} total={TOTAL_STEPS} />
 
               {confirmEmailSent ? (
-                <div className={styles.infoNote}>
+                <div className={styles.infoNote} role="status">
                   Almost there — check <strong>{email}</strong> for a confirmation link, then come
                   back and sign in.
                 </div>
@@ -498,18 +545,25 @@ export default function SignInPage() {
                   </div>
 
                   <div className={styles.field}>
-                    <label>Email</label>
+                    <label htmlFor={ids.email}>
+                      Email <span className={styles.hint}>(required)</span>
+                    </label>
                     <input
+                      id={ids.email}
                       type="email"
                       name="email"
+                      autoComplete="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                       className={emailInvalid ? styles.inputError : ""}
+                      aria-required="true"
+                      aria-invalid={emailInvalid}
+                      aria-describedby={emailInvalid ? ids.emailError : undefined}
                     />
                     {emailInvalid && (
-                      <p className={styles.errorText}>
+                      <p className={styles.errorText} id={ids.emailError} role="alert">
                         {trimmedEmail === ""
                           ? "Email is required."
                           : emailDisposable
@@ -534,45 +588,66 @@ export default function SignInPage() {
                     )}
                   </div>
                   <div className={styles.field}>
-                    <label>Preferred name</label>
+                    <label htmlFor={ids.name}>
+                      Preferred name <span className={styles.hint}>(required)</span>
+                    </label>
                     <input
+                      id={ids.name}
                       type="text"
+                      autoComplete="nickname"
                       placeholder="What should we call you?"
                       value={preferredName}
                       onChange={(e) => setPreferredName(e.target.value)}
                       onBlur={() => setTouched((t) => ({ ...t, preferredName: true }))}
                       className={nameInvalid ? styles.inputError : ""}
+                      aria-required="true"
+                      aria-invalid={nameInvalid}
+                      aria-describedby={nameInvalid ? ids.nameError : undefined}
                     />
-                    {nameInvalid && <p className={styles.errorText}>Preferred name is required.</p>}
+                    {nameInvalid && (
+                      <p className={styles.errorText} id={ids.nameError} role="alert">
+                        Preferred name is required.
+                      </p>
+                    )}
                   </div>
                   <div className={styles.field}>
-                    <label>Password</label>
+                    <label htmlFor={ids.password}>
+                      Password <span className={styles.hint}>(required)</span>
+                    </label>
                     <div className={styles.passwordWrap}>
                       <input
+                        id={ids.password}
                         type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
                         placeholder="Create a password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                         className={passwordInvalid ? styles.inputError : ""}
+                        aria-required="true"
+                        aria-invalid={passwordInvalid}
+                        aria-describedby={passwordInvalid ? `${ids.passwordError} ${ids.passwordHint}` : ids.passwordHint}
                       />
                       <button
                         type="button"
                         className={styles.passwordToggle}
                         onClick={() => setShowPassword((s) => !s)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
                     </div>
                     {passwordInvalid && (
-                      <p className={styles.errorText}>
+                      <p className={styles.errorText} id={ids.passwordError} role="alert">
                         {password === ""
                           ? "Password is required."
                           : `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`}
                       </p>
                     )}
-                    <p className={styles.fieldHint}>Must be at least {MIN_PASSWORD_LENGTH} characters.</p>
+                    <p className={styles.fieldHint} id={ids.passwordHint}>
+                      Must be at least {MIN_PASSWORD_LENGTH} characters.
+                    </p>
                   </div>
                 </div>
 
@@ -584,16 +659,29 @@ export default function SignInPage() {
 
                   <div className={styles.fieldRow}>
                     <div className={styles.field}>
-                      <label>Date of birth</label>
+                      <label htmlFor={ids.dob}>
+                        Date of birth <span className={styles.hint}>(required)</span>
+                      </label>
                       <input
+                        id={ids.dob}
                         type="date"
+                        autoComplete="bday"
                         value={dob}
                         onChange={(e) => setDob(e.target.value)}
                         className={dobInvalid || underage ? styles.inputError : ""}
+                        aria-required="true"
+                        aria-invalid={dobInvalid || underage}
+                        aria-describedby={dobInvalid || underage ? ids.dobError : undefined}
                       />
-                      {dobInvalid && <p className={styles.errorText}>Date of birth is required.</p>}
+                      {dobInvalid && (
+                        <p className={styles.errorText} id={ids.dobError} role="alert">
+                          Date of birth is required.
+                        </p>
+                      )}
                       {!dobInvalid && underage && (
-                        <p className={styles.errorText}>{MINIMUM_AGE_DISCLAIMER}</p>
+                        <p className={styles.errorText} id={ids.dobError} role="alert">
+                          {MINIMUM_AGE_DISCLAIMER}
+                        </p>
                       )}
                     </div>
                     <SelectField
@@ -696,13 +784,13 @@ export default function SignInPage() {
                     options={["Less than 1 month", "1–2 months", "3–6 months", "7–11 months", "1–2 years", "More than 2 years"]}
                   />
 
-                  <div className={styles.surveyQ}>
-                    <label className={styles.surveyLabel}>
+                  <fieldset className={styles.surveyQ}>
+                    <legend className={styles.surveyLabel}>
                       Are you currently working with a healthcare provider to taper your
                       psychiatric medication?
-                    </label>
+                    </legend>
                     <SegmentedYesNo />
-                  </div>
+                  </fieldset>
                 </div>
 
                 <div style={{ display: step === 3 ? "block" : "none" }}>
@@ -819,8 +907,9 @@ export default function SignInPage() {
                     ]}
                   />
 
-                  <div className={styles.consentBox}>
+                  <label className={styles.consentBox} htmlFor={ids.consent}>
                     <input
+                      id={ids.consent}
                       type="checkbox"
                       checked={consentChecked}
                       onChange={(e) => {
@@ -836,7 +925,7 @@ export default function SignInPage() {
                       </Link>
                       .
                     </span>
-                  </div>
+                  </label>
 
                   <div className="mt-16">
                     <Turnstile onVerify={setCreateTurnstileToken} />
@@ -870,21 +959,19 @@ export default function SignInPage() {
                     </button>
                   )}
                 </div>
-                {createError && <p className={styles.errorText}>{createError}</p>}
+                {createError && (
+                  <p className={styles.errorText} role="alert">
+                    {createError}
+                  </p>
+                )}
               </form>
               )}
 
               <div className={styles.authFooterLink}>
                 Already have an account?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setTab("signin");
-                  }}
-                >
+                <button type="button" onClick={() => setTab("signin")}>
                   Sign in
-                </a>
+                </button>
               </div>
               <div className={styles.guestInline}>
                 <Link href="/upload" className="btn btn-secondary btn-sm">

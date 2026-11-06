@@ -13,22 +13,22 @@ export default function Footer() {
             </div>
             <p>Donate your tapering data to help future patients. Create an account to bring it all together first.</p>
           </div>
-          <div>
-            <h4>Product</h4>
+          <nav aria-labelledby="footer-product">
+            <h2 id="footer-product">Product</h2>
             <Link href="/">Home</Link>
             <Link href="/upload">Upload Data</Link>
             <Link href="/profile">Profile</Link>
-          </div>
-          <div>
-            <h4>Company</h4>
+          </nav>
+          <nav aria-labelledby="footer-company">
+            <h2 id="footer-company">Company</h2>
             <Link href="/about">About Us</Link>
             <Link href="/privacy">Privacy</Link>
-          </div>
-          <div>
-            <h4>Get the app</h4>
+          </nav>
+          <nav aria-labelledby="footer-app">
+            <h2 id="footer-app">Get the app</h2>
             <a href="#">App Store</a>
             <a href="#">Google Play</a>
-          </div>
+          </nav>
         </div>
         <div className="footer-bottom">
           <span>© 2026 Cascade. All data is voluntary.</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import styles from "../signin/signin.module.css";
@@ -10,6 +10,7 @@ export default function ForgotPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const emailId = useId();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,7 +54,7 @@ export default function ForgotPasswordPage() {
             {sent ? (
               <>
                 <h2>Check your email</h2>
-                <p className={styles.authSub}>
+                <p className={styles.authSub} role="status">
                   If an account exists for <strong>{email}</strong>, a password reset link is on
                   its way.
                 </p>
@@ -66,16 +67,22 @@ export default function ForgotPasswordPage() {
                 </p>
                 <form onSubmit={handleSubmit}>
                   <div className={styles.field}>
-                    <label>Email</label>
+                    <label htmlFor={emailId}>Email</label>
                     <input
+                      id={emailId}
                       type="email"
+                      autoComplete="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  {error && <p className={styles.errorText}>{error}</p>}
+                  {error && (
+                    <p className={styles.errorText} role="alert">
+                      {error}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     className="btn btn-primary"
