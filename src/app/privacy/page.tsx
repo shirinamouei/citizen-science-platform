@@ -9,10 +9,9 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main>
-      <section className={styles.legalHero}>
+      <section className="page-hero">
         <div className="wrap">
-          <div className="eyebrow">Transparency, plainly stated</div>
-          <h1 style={{ fontSize: "38px" }}>How we handle your data</h1>
+          <h1>How we handle your data</h1>
           <p className="lede mt-16">
             Your tapering data is used to help with academic research on tapering psychiatric medications. 
             No sensitive information is attached, all contributions are completely anonymous, and your data
@@ -22,19 +21,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="section-tight" style={{ paddingTop: "32px" }}>
-        <div className={`wrap ${styles.legalLayout}`}>
-          <nav className={styles.toc} aria-label="On this page">
-            <div className={`card ${styles.tocCard}`}>
-              <a href="#what-we-collect">What we collect</a>
-              <a href="#why">Why we collect it</a>
-              <a href="#anonymization">How we anonymize</a>
-              <a href="#storage">Storage &amp; security</a>
-              <a href="#sharing">Who sees it</a>
-              <a href="#control">Your controls</a>
-              <a href="#rights">Your rights</a>
-            </div>
-          </nav>
-
+        <div className="wrap">
           <div className={styles.legalBody}>
             <span className={`pill ${styles.updatedPill}`}>Last updated July 2026</span>
 
@@ -79,60 +66,93 @@ export default function PrivacyPage() {
               </table>
             </div>
 
-            <h2 id="why">Why we collect it</h2>
-            <p>
-              Tapering off prescription medication is often poorly documented in clinical
-              literature. Real-world schedules, including cases that didn&apos;t go smoothly,
-              help researchers and clinicians understand what safer tapering actually looks
-              like. Your data, combined anonymously with others&apos;, becomes part of that
-              evidence base.
-            </p>
-
-            <h2 id="anonymization">How we anonymize your data</h2>
-            <p>Before your entry is added to the shared dataset, we remove:</p>
-            <ul>
-              <li>Your name, email, and any account identifiers</li>
-              <li>
-                Free-text notes are screened and stripped of anything that could identify you
-                (names, locations, providers)
-              </li>
-              <li>Timestamps are generalized to the week, not the exact date and time</li>
-            </ul>
-            <div className={styles.callout}>
-              Your profile page still shows your <em>own</em> full history so you can track
-              your progress. Anonymization happens only when data joins the shared research
-              dataset.
+            <div className={styles.accordion}>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="why">Why we collect it</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>
+                    Tapering off prescription medication is often poorly documented in clinical
+                    literature. Real-world schedules, including cases that didn&apos;t go smoothly,
+                    help researchers and clinicians understand what safer tapering actually looks
+                    like. Your data, combined anonymously with others&apos;, becomes part of that
+                    evidence base.
+                  </p>
+                </div>
+              </details>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="anonymization">How we anonymize your data</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>Before your entry is added to the shared dataset, we remove:</p>
+                  <ul>
+                    <li>Your name, email, and any account identifiers</li>
+                    <li>
+                      Free-text notes are screened and stripped of anything that could identify you
+                      (names, locations, providers)
+                    </li>
+                    <li>Timestamps are generalized to the week, not the exact date and time</li>
+                  </ul>
+                  <div className={styles.callout}>
+                    Your profile page still shows your <em>own</em> full history so you can track
+                    your progress. Anonymization happens only when data joins the shared research
+                    dataset.
+                  </div>
+                </div>
+              </details>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="storage">Storage &amp; security</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>
+                    Data is encrypted in transit and at rest. Access to identifiable account
+                    information is limited to a small technical team, and the anonymized research
+                    dataset is stored separately from account data entirely.
+                  </p>
+                </div>
+              </details>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="sharing">Who sees it</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>
+                    Aggregated, anonymized data may be shared with qualified researchers and
+                    clinicians studying medication tapering. We do not sell data to advertisers,
+                    insurers, or employers, and we never share identifiable information without your
+                    explicit, separate consent.
+                  </p>
+                </div>
+              </details>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="control">Your controls</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>
+                    From your profile, you can export everything you&apos;ve submitted, edit past
+                    entries, or delete a submission at any time. Deleting a submission removes it from
+                    future use, but if it was already incorporated into a research dataset, it can&apos;t
+                    be pulled back out of research that&apos;s already been conducted.
+                  </p>
+                </div>
+              </details>
+              <details className={styles.item}>
+                <summary className={styles.summary}>
+                  <h2 id="rights">Your rights</h2>
+                </summary>
+                <div className={styles.itemBody}>
+                  <p>
+                    Depending on where you live, you may have the right to access, correct, or delete
+                    your personal data, and to withdraw consent at any time. Contact us at{" "}
+                    <strong>privacy@cascade.app</strong> for any request.
+                  </p>
+                </div>
+              </details>
             </div>
-
-            <h2 id="storage">Storage &amp; security</h2>
-            <p>
-              Data is encrypted in transit and at rest. Access to identifiable account
-              information is limited to a small technical team, and the anonymized research
-              dataset is stored separately from account data entirely.
-            </p>
-
-            <h2 id="sharing">Who sees it</h2>
-            <p>
-              Aggregated, anonymized data may be shared with qualified researchers and
-              clinicians studying medication tapering. We do not sell data to advertisers,
-              insurers, or employers, and we never share identifiable information without your
-              explicit, separate consent.
-            </p>
-
-            <h2 id="control">Your controls</h2>
-            <p>
-              From your profile, you can export everything you&apos;ve submitted, edit past
-              entries, or delete a submission at any time. Deleting a submission removes it from
-              future use, but if it was already incorporated into a research dataset, it can&apos;t
-              be pulled back out of research that&apos;s already been conducted.
-            </p>
-
-            <h2 id="rights">Your rights</h2>
-            <p>
-              Depending on where you live, you may have the right to access, correct, or delete
-              your personal data, and to withdraw consent at any time. Contact us at{" "}
-              <strong>privacy@cascade.app</strong> for any request.
-            </p>
           </div>
         </div>
       </section>

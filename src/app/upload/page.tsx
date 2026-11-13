@@ -169,10 +169,9 @@ export default function UploadPage() {
 
   return (
     <main>
-      <section className={styles.uploadHero}>
+      <section className="page-hero">
         <div className="wrap">
-          <div className="eyebrow">Step 1 of 1, about 2 minutes</div>
-          <h1 style={{ fontSize: "clamp(26px, 8vw, 38px)" }}>Log your tapering data</h1>
+          <h1>Log your tapering data</h1>
           <p className="lede mt-16">
             Share as much or as little as you&apos;re comfortable with. Anything you submit is
             stripped of identifying details before it&apos;s added to the shared dataset.
@@ -344,7 +343,7 @@ export default function UploadPage() {
             )}
           </form>
 
-          <section aria-labelledby={`${idBase}-side-heading`}>
+          <section className={styles.sideSection} aria-labelledby={`${idBase}-side-heading`}>
             <div className={`card ${styles.sideCard}`}>
               <h2 className="heading-sm" id={`${idBase}-side-heading`}>What happens to this?</h2>
               <p>Your name and contact details are never linked to your tapering data once submitted.</p>

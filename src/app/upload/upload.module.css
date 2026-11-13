@@ -1,11 +1,13 @@
-.uploadHero { padding: 56px 0 8px; }
 .uploadLayout {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
-  gap: 40px;
+  gap: 28px;
   align-items: start;
 }
 .formCard { padding: 36px; }
+/* Plain wrapper: cancel the global 88px <section> padding so the side card
+   lines up with the top of the form card. */
+.sideSection { padding: 0; }
 .field { margin-bottom: 22px; }
 .field label {
   display: block;

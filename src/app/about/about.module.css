@@ -1,19 +1,28 @@
-.aboutHero { padding: 64px 0 48px; text-align: center; }
-.aboutHero h1 { max-width: 780px; margin: 0 auto; text-wrap: balance; }
-.aboutHero p:global(.lede) { max-width: 580px; margin: 16px auto 0; text-align: center; text-wrap: balance; }
-
-.missionBand {
+/* Full width on laptops and normal desktops; on very large monitors the tint
+   stops at about half the screen (never narrower than 1440px) and centers
+   instead of stretching edge to edge. */
+.band {
   background: var(--lavender);
   padding: 64px 0;
-  text-align: center;
+  width: 100%;
+  max-width: max(1440px, 50vw);
+  margin: 0 auto;
 }
-.missionBand h2 { color: var(--navy); max-width: 700px; margin: 0 auto; font-size: 28px; text-wrap: balance; }
+
+.sectionHead { text-align: center; }
+.sectionHead h2 {
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 30px;
+  text-wrap: balance;
+}
+.sectionHead p:global(.lede) { max-width: 660px; margin: 16px auto 0; text-align: center; }
 
 .valueGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  margin-top: 48px;
+  margin-top: 40px;
 }
 .valueCard { padding: 28px; }
 .valueIcon {
@@ -23,29 +32,27 @@
 }
 .valueIcon svg { width: 22px; height: 22px; }
 
-.storyGrid {
+.resourceList {
+  list-style: none;
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 48px;
-  align-items: start;
-  margin-top: 64px;
-  padding-top: 56px;
-  border-top: 1px solid var(--border);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 40px;
 }
-.storyGrid h2 { margin: 0; text-wrap: balance; }
-.storyGrid p { margin: 0; }
+.resourceCard { padding: 22px 26px; }
+.resourceCard a { font-weight: 700; font-size: 16px; }
+.resourceCard a:hover { color: var(--navy-soft); }
 
 .teamNote {
-  margin-top: 48px;
   padding: 22px 28px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
   background: #fff8ef;
-  border-left: 3px solid var(--orange);
-  border-radius: 4px 14px 14px 4px;
+  border: 2px solid var(--orange);
+  border-radius: 14px;
 }
-.teamNote h3 { font-size: 15.5px; margin-bottom: 4px; }
+.teamNote h2 { font-size: 15.5px; margin-bottom: 4px; }
 .teamNote p { margin: 0; color: var(--text-muted); font-size: 14px; }
 .teamNoteIcon {
   width: 32px; height: 32px; border-radius: 50%;
@@ -57,7 +64,8 @@
 
 @media (max-width: 860px) {
   .valueGrid { grid-template-columns: minmax(0, 1fr); }
-  .storyGrid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .missionBand { padding: 40px 0; }
+  .band { padding: 40px 0; }
+  .sectionHead h2 { font-size: 26px; }
   .teamNote { flex-direction: column; }
+  .resourceList { grid-template-columns: minmax(0, 1fr); }
 }

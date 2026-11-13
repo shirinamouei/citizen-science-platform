@@ -1,7 +1,7 @@
 .hero { padding: 32px 0 40px; }
 .hero h1 { font-size: 48px; }
 .heroHighlight { color: inherit; }
-.heroGrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 56px; align-items: center; }
+.heroGrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 40px; align-items: center; }
 .heroStats { display: flex; gap: 36px; margin-top: 44px; }
 .heroStats div strong { display: block; font-size: 40px; color: var(--navy); font-weight: 800; }
 .heroStats div span { font-size: 19px; color: var(--text-muted); }

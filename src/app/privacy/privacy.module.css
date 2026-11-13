@@ -1,17 +1,8 @@
-.legalHero { padding: 56px 0 8px; }
-.legalLayout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; align-items: start; }
-.toc { position: sticky; top: 96px; }
-.tocCard { padding: 20px; }
-.tocCard a {
-  display: block; font-size: 13.5px; color: var(--text-muted);
-  padding: 8px 10px; border-radius: 8px; margin-bottom: 2px;
-}
-.tocCard a:hover { background: var(--lavender); color: var(--navy); }
 .legalBody { min-width: 0; }
 .legalBody h2 { font-size: 22px; margin-top: 40px; margin-bottom: 12px; }
 .legalBody h2:first-child { margin-top: 0; }
-.legalBody p { color: var(--text-muted); font-size: 15px; margin-bottom: 14px; max-width: 680px; }
-.legalBody ul { margin: 14px 0 14px 20px; color: var(--text-muted); font-size: 15px; }
+.legalBody p { color: var(--text-muted); font-size: 16.5px; line-height: 1.6; margin-bottom: 14px; }
+.legalBody ul { margin: 14px 0 14px 20px; color: var(--text-muted); font-size: 16.5px; line-height: 1.6; }
 .legalBody li { margin-bottom: 8px; }
 .updatedPill { margin-bottom: 20px; }
 .callout {
@@ -19,14 +10,57 @@
   border-radius: var(--radius-sm);
   padding: 20px 22px;
   margin: 20px 0;
-  font-size: 14.5px;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--navy);
 }
 .tableScroll { width: 100%; max-width: 100%; overflow-x: auto; margin: 16px 0 24px; }
 .dataTable { width: 100%; min-width: 420px; border-collapse: collapse; margin: 0; }
-.dataTable th, .dataTable td { text-align: left; padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+.dataTable th, .dataTable td { text-align: left; padding: 14px 16px; font-size: 17px; border-bottom: 1px solid var(--border); }
 .dataTable th { color: var(--text-muted); font-weight: 600; }
-@media (max-width: 860px) {
-  .legalLayout { grid-template-columns: minmax(0, 1fr); }
-  .toc { position: static; display: none; }
+
+/* Collapsible sections: only the title shows until it's clicked. Built on
+   native <details>/<summary>, so it works with keyboard and screen readers. */
+.accordion {
+  margin-top: 40px;
+  border-top: 1px solid var(--border-strong);
+  /* Lets height animate to and from "auto" when a section opens or closes. */
+  interpolate-size: allow-keywords;
 }
+.item { border-bottom: 1px solid var(--border-strong); }
+/* Slow, eased open/close. Browsers without ::details-content support simply
+   open and close instantly. Reduced-motion users get no animation via the
+   global prefers-reduced-motion rule. */
+.item::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition: block-size 0.6s cubic-bezier(0.25, 0.1, 0.25, 1), content-visibility 0.6s allow-discrete;
+}
+.item[open]::details-content { block-size: auto; }
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 4px;
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.3s ease;
+}
+.summary::-webkit-details-marker { display: none; }
+.summary:hover { background: var(--lavender); }
+.legalBody .summary h2 { margin: 0; font-size: 22px; }
+.summary::after {
+  content: "";
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-right: 2.5px solid var(--navy);
+  border-bottom: 2.5px solid var(--navy);
+  transform: rotate(45deg);
+  transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.item[open] > .summary::after { transform: rotate(-135deg); }
+.itemBody { padding: 4px 4px 24px; }
+.itemBody p:last-child, .itemBody .callout:last-child { margin-bottom: 0; }

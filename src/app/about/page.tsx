@@ -46,33 +46,75 @@ const values = [
   },
 ];
 
+const resources = [
+  {
+    name: "The Maudsley Deprescribing Guidelines",
+    href: "https://www.amazon.com/dp/111982298X",
+    description: "A textbook on how to taper off different drugs.",
+  },
+  {
+    name: "Benzodiazepine Information Coalition",
+    href: "https://www.benzoinfo.com/",
+    description: "General information and tapering resources specific to benzodiazepines.",
+  },
+  {
+    name: "Antidepressant Coalition for Education",
+    href: "https://antidepressantinfo.org/",
+    description: "Education about antidepressants and coming off them.",
+  },
+  {
+    name: "Surviving Antidepressants",
+    href: "https://www.survivingantidepressants.org/",
+    description:
+      "A peer support forum. It is now read-only and not accepting new members, but it holds a large collection of patient narratives.",
+  },
+  {
+    name: "Inner Compass Initiative",
+    href: "https://www.theinnercompass.org/",
+    description: "Many resources, including tapering information.",
+  },
+  {
+    name: "Outro Health on YouTube",
+    href: "https://www.youtube.com/channel/UCp9aQJ_U5Lq04O-3eVz6r9g",
+    description: "Educational videos about psychiatric drugs and how to safely stop them.",
+  },
+];
+
 export default function AboutPage() {
   return (
     <main>
-      <section className={styles.aboutHero}>
+      <section className="page-hero" style={{ paddingBottom: "48px" }}>
         <div className="wrap">
           <h1>Tapering off medication shouldn&apos;t rely on guesswork.</h1>
-          <p className="lede">
+          <p className="lede mt-16">
             Cascade exists so you can donate your tapering data to support research and
             future patients. If yours is scattered across notebooks, PDFs, spreadsheets,
-            and chat logs, create an account to bring it into one place first.
+            and chat logs, create an account to bring it into one place.
           </p>
         </div>
       </section>
 
-      <section className={styles.missionBand}>
+      <section className={styles.band}>
         <div className="wrap">
-          <h2>
-            Donate your tapering data to support research and future patients taper with more
-            confidence. With an account, bring together your diary entries, PDFs,
-            spreadsheets, and AI chat logs into one place first.
-          </h2>
+          <div className={styles.sectionHead}>
+            <p className="eyebrow">
+              Our mission
+            </p>
+            <h2>Donate your tapering data to support research and help improve the safety of future tapering patients.</h2>
+            <p className="lede">
+              With an account, bring together your diary entries, PDFs, spreadsheets, and AI chat
+              logs into one place.
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="section-tight">
         <div className="wrap">
-          <div className="text-center mb-48">
+          <div className={styles.sectionHead}>
+            <p className="eyebrow">
+              Principles
+            </p>
             <h2>The principles behind the platform</h2>
           </div>
           <div className={styles.valueGrid}>
@@ -86,17 +128,54 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className={styles.storyGrid}>
+      <section className={styles.band}>
+        <div className="wrap">
+          <div className={styles.sectionHead}>
+            <p className="eyebrow">
+              Our story
+            </p>
             <h2>Built after watching patients taper without guidance or support.</h2>
             <p className="lede">
-              Cascade was built in the pursuit of consolidating tapering data across 
-              various groups of people for various medications and conditions. This data, whether it be from journals, 
-              notes apps, or spreadsheets, will support academic research to make tapering psychiatric medication less 
-              uncertain and help future patients feel supported.
+              Cascade was built in the pursuit of consolidating tapering data across various groups
+              of people for various medications and conditions. This data, whether it be from
+              journals, notes apps, or spreadsheets, will support academic research to make tapering
+              psychiatric medication less uncertain and help future patients feel supported.
             </p>
           </div>
+        </div>
+      </section>
 
+      <section className="section-tight">
+        <div className="wrap">
+          <div className={styles.sectionHead}>
+            <p className="eyebrow">
+              Learn more
+            </p>
+            <h2>Want to learn more about tapering?</h2>
+            <p className="lede">
+              These independent resources cover tapering and withdrawal in more depth. They are
+              shared for your information and are not affiliated with Cascade.
+            </p>
+          </div>
+          <ul className={styles.resourceList}>
+            {resources.map((resource) => (
+              <li className={`card ${styles.resourceCard}`} key={resource.name}>
+                <a href={resource.href} target="_blank" rel="noopener noreferrer" className="link-underline">
+                  {resource.name}
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+                <p className="text-muted-sm">{resource.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="section-tight">
+        <div className="wrap">
           <div className={styles.teamNote}>
             <div className={styles.teamNoteIcon}>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
@@ -106,7 +185,7 @@ export default function AboutPage() {
               </svg>
             </div>
             <div>
-              <h3>A note on medical advice</h3>
+              <h2 className="heading-sm">A note on medical advice</h2>
               <p>
                 Cascade is a data-donation platform for people tapering off medication, not a medical
                 provider. Talk to a healthcare professional before changing how you take any
