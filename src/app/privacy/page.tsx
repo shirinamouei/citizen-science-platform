@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatLongDate, getLastModified } from "@/lib/last-modified";
 import styles from "./privacy.module.css";
 
 export const metadata: Metadata = {
@@ -7,6 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
+  // Refreshes automatically on each build from this file's last edit.
+  const lastUpdated = getLastModified("src/app/privacy/page.tsx");
+
   return (
     <main>
       <section className="page-hero">
@@ -23,7 +27,12 @@ export default function PrivacyPage() {
       <section className="section-tight" style={{ paddingTop: "32px" }}>
         <div className="wrap">
           <div className={styles.legalBody}>
-            <span className={`pill ${styles.updatedPill}`}>Last updated July 2026</span>
+            <span className={`pill ${styles.updatedPill}`}>
+              {/* The pill is a flex container with a gap, so keep the text and date in one child. */}
+              <span>
+                Last updated <time dateTime={lastUpdated}>{formatLongDate(lastUpdated)}</time>
+              </span>
+            </span>
 
             <h2 id="what-we-collect">What we collect</h2>
             <p>

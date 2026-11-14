@@ -55,13 +55,9 @@ export default function Home() {
                 <span>Anonymized</span>
               </div>
               <div>
-                <strong>0</strong>
-                <span>Data sold</span>
-              </div>
-              {/* <div>
                 <strong>24/7</strong>
-                <span>Export or delete anytime</span>
-              </div> */}
+                <span>Dlete anytime</span>
+              </div> 
             </div>
           </div>
 

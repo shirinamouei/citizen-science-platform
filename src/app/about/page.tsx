@@ -35,7 +35,7 @@ const values = [
     background: "#e3f1fc",
     title: "Any format, one place",
     description:
-      "Handwritten notes, PDFs, spreadsheets, even AI chat exports — with an account, we organize whatever you already have into one view, ready to donate.",
+      "Handwritten notes, PDFs, spreadsheets, even AI chat exports, we organize whatever you already have into one view.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path d="M12 3 3 8l9 5 9-5-9-5z" stroke="#112845" strokeWidth="1.6" strokeLinejoin="round" />
